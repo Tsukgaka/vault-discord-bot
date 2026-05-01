@@ -44,7 +44,7 @@ async def process_verifications():
 
                 guild = bot.get_guild(guild_id)
                 if not guild:
-                    mark_verification_processed(v["id"])
+                    mark_verification_processed(str(guild_id), str(user_id))
                     continue
 
                 # Fetch member (might not be cached yet if they just joined)
@@ -86,12 +86,12 @@ async def process_verifications():
                             print(f"❌ Failed to send log: {e}")
 
                 # Mark as processed
-                mark_verification_processed(v["id"])
+                mark_verification_processed(str(guild_id), str(user_id))
             except Exception as e:
-                print(f"❌ Error processing verification {v.get('id')}: {e}")
+                print(f"❌ Error processing verification for {v.get('discord_id')}: {e}")
                 # Mark processed anyway to avoid infinite loop on bad data
-                if "id" in v:
-                    mark_verification_processed(v["id"])
+                if v.get("guild_id") and v.get("discord_id"):
+                    mark_verification_processed(str(v["guild_id"]), str(v["discord_id"]))
     except Exception as e:
         print(f"❌ Verification task error: {e}")
 

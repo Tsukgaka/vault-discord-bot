@@ -115,7 +115,7 @@ def get_unprocessed_verifications() -> list[dict]:
             return [dict(row) for row in cur.fetchall()]
 
 
-def mark_verification_processed(verification_id: int):
+def mark_verification_processed(guild_id: str, discord_id: str):
     with get_conn() as conn:
         with conn.cursor() as cur:
-            cur.execute("UPDATE verified_users SET processed = true WHERE id = %s", (verification_id,))
+            cur.execute("UPDATE verified_users SET processed = true WHERE guild_id = %s AND discord_id = %s", (guild_id, discord_id))
