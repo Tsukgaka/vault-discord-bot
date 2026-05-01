@@ -1,6 +1,6 @@
 """
 GET /api/callback?code=CODE&state=STATE
-→ Secure OAuth2 flow (Vercel-safe)
+→ Stable Discord OAuth2 callback (Vercel-safe)
 """
 
 import os
@@ -14,8 +14,9 @@ from urllib.parse import urlparse, parse_qs
 import requests as req
 
 from _db import hash_value, get_guild_settings, check_duplicates, save_verified_user
-from _vpn import check_ip, get_client_ip
+from _vpn import check_ip
 from _discord import send_log, add_member_to_guild, add_role, build_log_embed
+
 
 WEB_URL = os.environ.get("WEB_URL", "").rstrip("/")
 CLIENT_ID = os.environ.get("DISCORD_CLIENT_ID", "")
@@ -57,6 +58,7 @@ class handler(BaseHTTPRequestHandler):
             if not raw_cookie:
                 return self._error("missing_cookie")
 
+            # ── Safe decode state ────────────────────────
             try:
                 padded = raw_cookie + "==="
                 payload = json.loads(
@@ -65,11 +67,12 @@ class handler(BaseHTTPRequestHandler):
                 expected_state = payload.get("state")
                 guild_id = payload.get("guild_id")
                 user_id = payload.get("user_id")
+
+                if not expected_state or not guild_id or not user_id:
+                    return self._error("invalid_state")
+
             except Exception:
                 return self._error("invalid_state")
-
-            if not expected_state or not guild_id or not user_id:
-                return self._error("invalid_state_payload")
 
             if not hmac.compare_digest(state, expected_state):
                 return self._error("state_mismatch")
@@ -93,7 +96,7 @@ class handler(BaseHTTPRequestHandler):
 
             access_token = token_resp.json().get("access_token")
 
-            # ── Get user ────────────────────────────────
+            # ── Fetch user ───────────────────────────────
             user_resp = req.get(
                 "https://discord.com/api/users/@me",
                 headers={"Authorization": f"Bearer {access_token}"},
@@ -105,6 +108,7 @@ class handler(BaseHTTPRequestHandler):
                 return self._error("user_fetch_failed")
 
             user = user_resp.json()
+
             discord_id = user.get("id")
             username = user.get("username")
             email = user.get("email")
@@ -116,7 +120,7 @@ class handler(BaseHTTPRequestHandler):
             if not email or not verified:
                 return self._error("email_not_verified")
 
-            # ── Email block ─────────────────────────────
+            # ── email block ─────────────────────────────
             domain = email.split("@")[-1].lower()
             if domain in BLOCKED_EMAIL_DOMAINS:
                 return self._error("email_blocked")
@@ -130,7 +134,7 @@ class handler(BaseHTTPRequestHandler):
             if not settings:
                 return self._error("guild_not_configured")
 
-            # ── IP check ────────────────────────────────
+            # ── IP detection ────────────────────────────
             client_ip = (
                 self.headers.get("x-real-ip")
                 or self.headers.get("x-forwarded-for", "127.0.0.1").split(",")[0].strip()
