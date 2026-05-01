@@ -92,6 +92,7 @@ class handler(BaseHTTPRequestHandler):
             guild_id = payload["guild_id"]
             user_id = payload["user_id"]
             target_role_id = payload.get("role_id") or VERIFIED_ROLE_ID
+            print(f"DEBUG: Cookie payload - Guild: {guild_id}, User: {user_id}, Target Role: {target_role_id}")
 except Exception as e:
     print(f"Error decoding state cookie: {e}")
     return self._error("invalid_state")
@@ -191,10 +192,12 @@ except Exception as e:
         try:
             add_member_to_guild(guild_id, discord_id, access_token)
             if target_role_id:
-                print(f"Adding role {target_role_id} to user {discord_id} in guild {guild_id}")
+                print(f"Attempting to add role {target_role_id} to user {discord_id} in guild {guild_id}")
                 add_role(guild_id, discord_id, target_role_id)
+            else:
+                print("DEBUG: No role ID found to add.")
         except Exception as e:
-            print(f"Error adding member or role: {e}")
+            print(f"Error in member/role processing: {e}")
 
         # ── 10. Send log ──────────────────────────────────────────────────
         try:

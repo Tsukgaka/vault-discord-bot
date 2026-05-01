@@ -14,7 +14,9 @@ def send_log(channel_id: str, embed: dict) -> None:
         timeout=5,
     )
     if not res.ok:
-        print(f"FAILED to send log: {res.status_code} {res.text}")
+        print(f"FAILED to send log to {channel_id}: {res.status_code} {res.text}")
+    else:
+        print(f"SUCCESS: Log sent to {channel_id}")
 
 
 def add_member_to_guild(guild_id: str, user_id: str, access_token: str) -> None:
@@ -25,7 +27,9 @@ def add_member_to_guild(guild_id: str, user_id: str, access_token: str) -> None:
         timeout=5,
     )
     if not res.ok:
-        print(f"FAILED to add member: {res.status_code} {res.text}")
+        print(f"FAILED to add/update member {user_id} in {guild_id}: {res.status_code} {res.text}")
+    else:
+        print(f"SUCCESS: Member {user_id} added/updated in {guild_id}")
 
 
 def add_role(guild_id: str, user_id: str, role_id: str) -> None:
@@ -35,7 +39,9 @@ def add_role(guild_id: str, user_id: str, role_id: str) -> None:
         timeout=5,
     )
     if not res.ok:
-        print(f"FAILED to add role: {res.status_code} {res.text}")
+        print(f"CRITICAL: FAILED to add role {role_id} to {user_id}. Status: {res.status_code}, Body: {res.text}")
+    else:
+        print(f"SUCCESS: Role {role_id} added to user {user_id}")
 
 
 def build_log_embed(data: dict, lang: str) -> dict:
