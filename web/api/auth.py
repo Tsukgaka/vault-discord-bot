@@ -10,8 +10,8 @@ import base64
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlencode, urlparse, parse_qs
 
-WEB_URL = os.environ["WEB_URL"].rstrip("/")
-CLIENT_ID = os.environ["DISCORD_CLIENT_ID"]
+WEB_URL = os.environ.get("WEB_URL", "").rstrip("/")
+CLIENT_ID = os.environ.get("DISCORD_CLIENT_ID", "")
 
 
 class handler(BaseHTTPRequestHandler):

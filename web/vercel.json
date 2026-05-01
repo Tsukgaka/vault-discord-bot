@@ -1,7 +1,8 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/*.py", "use": "@vercel/python" },
+    { "src": "api/auth.py", "use": "@vercel/python" },
+    { "src": "api/callback.py", "use": "@vercel/python" },
     { "src": "static/**", "use": "@vercel/static" }
   ],
   "routes": [
