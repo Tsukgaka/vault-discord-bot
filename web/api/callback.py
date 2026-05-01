@@ -93,9 +93,9 @@ class handler(BaseHTTPRequestHandler):
             user_id = payload["user_id"]
             target_role_id = payload.get("role_id") or VERIFIED_ROLE_ID
             print(f"DEBUG: Cookie payload - Guild: {guild_id}, User: {user_id}, Target Role: {target_role_id}")
-except Exception as e:
-    print(f"Error decoding state cookie: {e}")
-    return self._error("invalid_state")
+        except Exception as e:
+            print(f"Error decoding state cookie: {e}")
+            return self._error("invalid_state")
 
         if not hmac.compare_digest(state, expected_state):
             return self._error("state_mismatch")
