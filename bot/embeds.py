@@ -9,14 +9,14 @@ def settings_embed(settings: dict) -> discord.Embed:
     log_ch = f"<#{settings['log_channel_id']}>" if settings.get("log_channel_id") else "未設定 / Not set"
 
     embed = discord.Embed(
-        title=t(lang, "set", "title"),
+        title=f"<:Moderator_Logo:1484813985072283830> {t(lang, 'set', 'title')}",
         description=t(lang, "set", "description"),
         color=0x5865F2,
     )
-    embed.add_field(name="📋 Log", value=log_ch, inline=True)
-    embed.add_field(name="🌐 Language", value="日本語" if lang == "ja" else "English", inline=True)
-    embed.add_field(name="🛡️ VPN", value=vpn, inline=True)
-    embed.add_field(name="🔒 Sub垢", value=sub, inline=True)
+    embed.add_field(name="<:Moderator_Logo:1484813985072283830> Log", value=log_ch, inline=True)
+    embed.add_field(name="<:Moderator_Logo:1484813985072283830> Language", value="日本語" if lang == "ja" else "English", inline=True)
+    embed.add_field(name="<:Moderator_Logo:1484813985072283830> VPN", value=vpn, inline=True)
+    embed.add_field(name="<:Moderator_Logo:1484813985072283830> Sub垢", value=sub, inline=True)
     return embed
 
 
@@ -36,7 +36,7 @@ class SettingsButton(discord.ui.Button):
 
 def check_embed(user: dict, lang: str) -> discord.Embed:
     import datetime
-    embed = discord.Embed(title=t(lang, "check", "title"), color=0x5865F2)
+    embed = discord.Embed(title=f"<:Discord_members:1480096909036097616> {t(lang, 'check', 'title')}", color=0x5865F2)
     embed.add_field(name=t(lang, "log", "user"), value=f"<@{user['discord_id']}> ({user['discord_username']})", inline=False)
     embed.add_field(name="Discord ID", value=user["discord_id"], inline=True)
     embed.add_field(name=t(lang, "log", "email"), value=user["email"], inline=False)
@@ -50,8 +50,8 @@ def check_embed(user: dict, lang: str) -> discord.Embed:
 
 
 def log_embed(data: dict, lang: str) -> discord.Embed:
-    embed = discord.Embed(title=t(lang, "log", "title"), color=0x57F287)
-    embed.add_field(name=t(lang, "log", "user"), value=f"<@{data['discord_id']}> ({data['discord_username']})", inline=False)
+    embed = discord.Embed(title=f"<:emoji_29:484692916428472402> {t(lang, 'log', 'title')}", color=0x57F287)
+    embed.add_field(name=f"<:Discord_members:1480096909036097616> {t(lang, 'log', 'user')}", value=f"<@{data['discord_id']}> ({data['discord_username']})", inline=False)
     embed.add_field(name=t(lang, "log", "email"), value=_mask_email(data["email"]), inline=True)
     embed.add_field(name=t(lang, "log", "ip"), value=_mask_ip(data["ip_address"]), inline=True)
     vpn_val = t(lang, "log", "yes") if data.get("is_vpn") else t(lang, "log", "no")

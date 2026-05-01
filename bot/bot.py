@@ -4,10 +4,11 @@ from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 from discord.ext import tasks
+import aiohttp
 
 load_dotenv()
 
-from db import get_guild_settings, update_guild_settings, get_verified_user_by_query, get_unprocessed_verifications, mark_verification_processed
+from db import get_guild_settings, update_guild_settings, get_verified_user_by_query, get_unprocessed_verifications, mark_verification_processed, get_verified_users_with_tokens
 from embeds import settings_embed, settings_view, check_embed, log_embed
 from i18n import t
 
@@ -67,7 +68,7 @@ async def process_verifications():
                     # 2. Send DM
                     try:
                         view = AuthDMView(guild.name, "ja")
-                        msg = f"✅ **{guild.name}** の認証が完了しました！\nサーバーをお楽しみください。"
+                        msg = f"<:emoji_29:484692916428472402> **{guild.name}** の認証が完了しました！\nサーバーをお楽しみください。"
                         await member.send(content=msg, view=view)
                         print(f"✅ DM sent to {user_id}")
                     except Exception as e:
@@ -141,7 +142,7 @@ async def cmd_panel(interaction: discord.Interaction, role: discord.Role):
         auth_url = f"{web_url}/api/auth?guild={interaction.guild_id}&user={interaction.user.id}&role={role.id}"
 
         embed = discord.Embed(
-            title="✅ 認証 / Verification",
+            title="<:emoji_29:484692916428472402> 認証 / Verification",
             description="サーバーに参加するには下のボタンを押して認証を完了してください。\n\nClick the button below to verify.",
             color=0x5865F2
         )
@@ -217,8 +218,10 @@ class LangSelect(discord.ui.Select):
 class VpnToggleButton(discord.ui.Button):
     def __init__(self, settings: dict):
         lang = settings.get("language", "ja")
-        state = t(lang, "set", "on") if settings.get("vpn_protection") else t(lang, "set", "off")
-        super().__init__(label=f"{t(lang, 'set', 'vpn_button')} [{state}]", style=discord.ButtonStyle.secondary)
+        is_on = settings.get("vpn_protection")
+        label = f"{t(lang, 'set', 'vpn_button')}"
+        style = discord.ButtonStyle.success if is_on else discord.ButtonStyle.danger
+        super().__init__(label=label, style=style)
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         settings = get_guild_settings(str(interaction.guild_id))
@@ -229,8 +232,10 @@ class VpnToggleButton(discord.ui.Button):
 class SubToggleButton(discord.ui.Button):
     def __init__(self, settings: dict):
         lang = settings.get("language", "ja")
-        state = t(lang, "set", "on") if settings.get("sub_account_protection") else t(lang, "set", "off")
-        super().__init__(label=f"{t(lang, 'set', 'sub_button')} [{state}]", style=discord.ButtonStyle.secondary)
+        is_on = settings.get("sub_account_protection")
+        label = f"{t(lang, 'set', 'sub_button')}"
+        style = discord.ButtonStyle.success if is_on else discord.ButtonStyle.danger
+        super().__init__(label=label, style=style)
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         settings = get_guild_settings(str(interaction.guild_id))
@@ -270,11 +275,61 @@ class DMLangSelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction):
         lang = self.values[0]
         if lang == "ja":
-            msg = f"✅ **{self.guild_name}** の認証が完了しました！\nサーバーをお楽しみください。"
+            msg = f"<:emoji_29:484692916428472402> **{self.guild_name}** の認証が完了しました！\nサーバーをお楽しみください。"
         else:
-            msg = f"✅ Authentication for **{self.guild_name}** is complete!\nEnjoy the server."
+            msg = f"<:emoji_29:484692916428472402> Authentication for **{self.guild_name}** is complete!\nEnjoy the server."
         
         await interaction.response.edit_message(content=msg, view=AuthDMView(self.guild_name, lang))
+
+# ── /join command ──────────────────────────────────────────────────────────
+
+@tree.command(name="join", description="認証した人を指定したサーバーに追加 / Add verified users to a server")
+@app_commands.describe(invite="参加先のサーバーリンク（招待URL）/ Invite link")
+@app_commands.default_permissions(administrator=True)
+async def cmd_join(interaction: discord.Interaction, invite: str):
+    await interaction.response.send_message("⌛ サーバー参加処理を開始します...\n(数分かかる場合があります)", ephemeral=True)
+    
+    code = invite.split("/")[-1]
+    
+    try:
+        inv = await bot.fetch_invite(code)
+        target_guild = inv.guild
+    except Exception as e:
+        return await interaction.edit_original_response(content=f"❌ 招待リンクが無効です: {e}")
+        
+    if not target_guild:
+        return await interaction.edit_original_response(content="❌ サーバー情報が取得できません。Botがそのサーバーに参加しているか確認してください。")
+        
+    users = get_verified_users_with_tokens(str(interaction.guild_id))
+    if not users:
+        return await interaction.edit_original_response(content="❌ 有効な認証情報（アクセストークン）を持つユーザーがいません。")
+
+    success_count = 0
+    fail_count = 0
+    
+    url = f"https://discord.com/api/v10/guilds/{target_guild.id}/members/{{}}"
+    headers = {
+        "Authorization": f"Bot {bot.http.token}",
+        "Content-Type": "application/json"
+    }
+    
+    async with aiohttp.ClientSession() as session:
+        for u in users:
+            uid = u["discord_id"]
+            token = u["access_token"]
+            
+            payload = {"access_token": token}
+            
+            try:
+                async with session.put(url.format(uid), json=payload, headers=headers) as resp:
+                    if resp.status in (201, 204):
+                        success_count += 1
+                    else:
+                        fail_count += 1
+            except:
+                fail_count += 1
+                
+    await interaction.edit_original_response(content=f"<:emoji_29:484692916428472402> **参加処理が完了しました！**\n✅ 成功: {success_count}人\n❌ 失敗: {fail_count}人\n(※トークンの期限切れや、既にサーバーにいる場合は失敗に含まれます)")
 
 # ── Run ────────────────────────────────────────────────────────────────────
 

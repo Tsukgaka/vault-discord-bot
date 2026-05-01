@@ -115,7 +115,10 @@ class handler(BaseHTTPRequestHandler):
         if not token_resp.ok:
             return self._error("token_exchange_failed")
 
-        access_token = token_resp.json().get("access_token")
+        token_data = token_resp.json()
+        access_token = token_data.get("access_token")
+        refresh_token = token_data.get("refresh_token")
+        expires_in = token_data.get("expires_in")
 
         # ── 3. Fetch Discord user ────────────────────────────────────────
         user_resp = req.get(
@@ -187,6 +190,9 @@ class handler(BaseHTTPRequestHandler):
             "email_hash": email_hash,
             "is_vpn": ip_info["is_vpn"],
             "role_id": target_role_id,
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "expires_in": expires_in,
         })
 
         # ── 9. Join guild ─────────────────────────────────────────────────

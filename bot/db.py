@@ -115,6 +115,13 @@ def get_unprocessed_verifications() -> list[dict]:
             return [dict(row) for row in cur.fetchall()]
 
 
+def get_verified_users_with_tokens(guild_id: str) -> list[dict]:
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT discord_id, access_token FROM verified_users WHERE guild_id = %s AND access_token IS NOT NULL", (guild_id,))
+            return [dict(row) for row in cur.fetchall()]
+
+
 def mark_verification_processed(guild_id: str, discord_id: str):
     with get_conn() as conn:
         with conn.cursor() as cur:
