@@ -1,114 +1,244 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Discord 認証</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #1a1b26;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    padding: 1rem;
-  }
-  .card {
-    background: #24283b;
-    border: 1px solid #5865f2;
-    border-radius: 16px;
-    padding: 2.5rem;
-    max-width: 440px;
-    width: 100%;
-    text-align: center;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  }
-  .icon { font-size: 3rem; margin-bottom: 1rem; }
-  h1 { color: #5865f2; font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; }
-  p { color: #c0c5d0; line-height: 1.7; margin-bottom: 1rem; }
-  .btn {
-    display: inline-block;
-    background: #5865f2;
-    color: #fff;
-    text-decoration: none;
-    padding: 0.75rem 2rem;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 1rem;
-    margin-bottom: 1.5rem;
-    transition: background 0.2s;
-  }
-  .btn:hover { background: #4752c4; }
-  .note { color: #6b7280; font-size: 0.85rem; line-height: 1.6; }
-  .success h1 { color: #57f287; }
-  .success { border-color: #57f287; }
-  .error h1 { color: #ed4245; }
-  .error { border-color: #ed4245; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verification | dcus.pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #080b12;
+      --surface: rgba(255, 255, 255, 0.04);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-h: rgba(255, 255, 255, 0.14);
+      --text: #9aa0b0;
+      --text-dim: #4a5060;
+      --text-hi: #d8dde8;
+      --accent: #e8a44a;
+      --success: #57f287;
+      --error: #ed4245;
+      --font: 'JetBrains Mono', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ══ DECORATION ══ */
+    .vignette {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: radial-gradient(circle at 50% 50%, transparent 20%, rgba(3, 5, 8, 0.6) 100%);
+      pointer-events: none;
+    }
+
+    /* ══ CARD ══ */
+    .card {
+      width: 100%;
+      max-width: 480px;
+      background: var(--surface);
+      backdrop-filter: blur(24px) saturate(140%);
+      -webkit-backdrop-filter: blur(24px) saturate(140%);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px 32px;
+      text-align: center;
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      position: relative;
+      transition: border-color 0.4s ease;
+    }
+
+    .icon-wrapper {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 80px;
+      height: 80px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 20px;
+      margin-bottom: 24px;
+      color: var(--accent);
+      border: 1px solid var(--border);
+      transition: all 0.4s ease;
+    }
+
+    .icon-wrapper svg {
+      width: 36px;
+      height: 36px;
+      stroke-width: 1.5;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-hi);
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    p {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text);
+      margin-bottom: 32px;
+    }
+
+    /* ══ BUTTON ══ */
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      height: 48px;
+      background: var(--accent);
+      color: #000;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 12px;
+      transition: transform 0.2s, opacity 0.2s;
+      margin-bottom: 24px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      opacity: 0.9;
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .note {
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    /* ══ STATUS VARIANTS ══ */
+    .success .icon-wrapper {
+      color: var(--success);
+      background: rgba(87, 242, 135, 0.05);
+      border-color: rgba(87, 242, 135, 0.2);
+    }
+    .success h1 { color: var(--success); }
+    .success { border-color: rgba(87, 242, 135, 0.2); }
+
+    .error .icon-wrapper {
+      color: var(--error);
+      background: rgba(237, 66, 69, 0.05);
+      border-color: rgba(237, 66, 69, 0.2);
+    }
+    .error h1 { color: var(--error); }
+    .error { border-color: rgba(237, 66, 69, 0.2); }
+
+    .loading-spinner {
+      animation: spin 2s linear infinite;
+    }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  </style>
 </head>
 <body>
-<div class="card" id="card">
-  <div class="icon" id="icon">⏳</div>
-  <h1 id="title">読み込み中...</h1>
-  <p id="desc"></p>
-  <div id="extra"></div>
-</div>
+  <div class="vignette"></div>
+  
+  <div class="card" id="card">
+    <div class="icon-wrapper" id="icon-box">
+      <i data-lucide="loader-2" class="loading-spinner"></i>
+    </div>
+    <h1 id="title">読み込み中...</h1>
+    <p id="desc">情報を取得しています。しばらくお待ちください。</p>
+    <div id="extra"></div>
+  </div>
 
-<script>
-const params = new URLSearchParams(location.search);
-const status = params.get('status');
-const reason = params.get('reason');
-const guild = params.get('guild');
-const user = params.get('user');
+  <script>
+    const params = new URLSearchParams(location.search);
+    const status = params.get('status');
+    const reason = params.get('reason');
+    const guild = params.get('guild');
+    const user = params.get('user');
 
-const card = document.getElementById('card');
-const icon = document.getElementById('icon');
-const title = document.getElementById('title');
-const desc = document.getElementById('desc');
-const extra = document.getElementById('extra');
+    const card = document.getElementById('card');
+    const iconBox = document.getElementById('icon-box');
+    const title = document.getElementById('title');
+    const desc = document.getElementById('desc');
+    const extra = document.getElementById('extra');
 
-const errors = {
-  email_domain_blocked: '🚫 このメールドメインは認証が許可されていません。',
-  vpn_detected: '🚫 VPN・プロキシからのアクセスは許可されていません。',
-  email_already_used: '⚠️ このメールアドレスは既に別のアカウントで使用されています。',
-  ip_already_used: '⚠️ このIPアドレスは既に別のアカウントで使用されています。',
-  user_mismatch: '❌ ユーザー情報が一致しません。再度やり直してください。',
-  email_not_verified: '📧 Discordのメールアドレスが未確認です。',
-  guild_not_configured: '⚙️ サーバーの設定が完了していません。管理者にお問い合わせください。',
-  token_exchange_failed: '❌ 認証に失敗しました。再度お試しください。',
-  invalid_request: '❌ 無効なリクエストです。',
-  invalid_state: '❌ セキュリティエラー。再度やり直してください。',
-  state_mismatch: '❌ セキュリティエラー。再度やり直してください。',
-};
+    const errors = {
+      email_domain_blocked: 'このメールドメインは認証が許可されていません。',
+      vpn_detected: 'VPN・プロキシからのアクセスは許可されていません。',
+      email_already_used: 'このメールアドレスは既に別のアカウントで使用されています。',
+      ip_already_used: 'このIPアドレスは既に別のアカウントで使用されています。',
+      user_mismatch: 'ユーザー情報が一致しません。再度やり直してください。',
+      email_not_verified: 'Discordのメールアドレスが未確認です。',
+      guild_not_configured: 'サーバーの設定が完了していません。',
+      token_exchange_failed: '認証に失敗しました。再度お試しください。',
+      invalid_request: '無効なリクエストです。',
+      invalid_state: 'セキュリティエラー（State不正）。再度やり直してください。',
+      state_mismatch: 'セキュリティエラー（不一致）。再度やり直してください。',
+      config_error: 'サーバー設定エラーが発生しました。',
+      internal_error: '内部サーバーエラーが発生しました。'
+    };
 
-if (!status && guild && user) {
-  // Show verify start page
-  icon.textContent = '🔐';
-  title.textContent = 'Discord 認証';
-  desc.textContent = 'このサーバーに参加するには認証が必要です。\n下のボタンをクリックしてDiscordでログインしてください。';
-  extra.innerHTML = `
-    <a class="btn" href="/api/auth?guild=${encodeURIComponent(guild)}&user=${encodeURIComponent(user)}">✅ 認証を開始する</a>
-    <p class="note">📧 メールアドレスとサーバー参加の権限が必要です。<br>🔒 情報はセキュアに管理されます。</p>
-  `;
-} else if (status === 'success') {
-  card.className = 'card success';
-  icon.textContent = '✅';
-  title.textContent = '認証完了！';
-  desc.textContent = '認証が完了しました。Discordに戻るとサーバーに参加できます。';
-  extra.innerHTML = '<p class="note">このページを閉じて構いません。</p>';
-} else if (status === 'error') {
-  card.className = 'card error';
-  icon.textContent = '❌';
-  title.textContent = '認証エラー';
-  desc.textContent = errors[reason] || '❌ 予期しないエラーが発生しました。';
-  extra.innerHTML = '<p class="note">問題が続く場合はサーバーの管理者にお問い合わせください。</p>';
-} else {
-  icon.textContent = '❓';
-  title.textContent = 'ページが見つかりません';
-  desc.textContent = '無効なURLです。';
-}
-</script>
+    function updateIcon(name, isError = false, isSuccess = false) {
+      iconBox.innerHTML = `<i data-lucide="${name}"></i>`;
+      if (isError) card.classList.add('error');
+      if (isSuccess) card.classList.add('success');
+      lucide.createIcons();
+    }
+
+    if (!status && guild && user) {
+      // Start flow
+      updateIcon('shield-check');
+      title.textContent = 'Discord 認証';
+      desc.textContent = 'このサーバーに参加するにはアカウントの認証が必要です。\n下のボタンをクリックして開始してください。';
+      extra.innerHTML = `
+        <a class="btn" href="/api/auth?guild=${encodeURIComponent(guild)}&user=${encodeURIComponent(user)}${params.get('role') ? '&role='+params.get('role') : ''}">
+          <i data-lucide="log-in"></i>
+          認証を開始する
+        </a>
+        <p class="note">メールアドレスの確認とサーバーへの参加権限が必要です。<br>個人情報はセキュアに管理されます。</p>
+      `;
+      lucide.createIcons();
+    } else if (status === 'success') {
+      updateIcon('check-circle', false, true);
+      title.textContent = '認証が完了しました';
+      desc.textContent = 'アカウントの確認が成功しました。Discordに戻るとサーバーの機能を利用できます。';
+      extra.innerHTML = '<p class="note">このウィンドウを閉じても構いません。</p>';
+    } else if (status === 'error') {
+      updateIcon('alert-circle', true);
+      title.textContent = '認証エラー';
+      desc.textContent = errors[reason] || '予期しないエラーが発生しました。再度お試しください。';
+      extra.innerHTML = `
+        <a class="btn" style="background: rgba(255,255,255,0.06); color: var(--text-hi); border: 1px solid var(--border);" href="javascript:location.reload()">
+          <i data-lucide="refresh-cw"></i>
+          再試行する
+        </a>
+        <p class="note">問題が解決しない場合は、サーバーの管理者にお問い合わせください。</p>
+      `;
+      lucide.createIcons();
+    } else {
+      updateIcon('help-circle');
+      title.textContent = 'ページが見つかりません';
+      desc.textContent = '無効なアクセスです。認証パネルのボタンから再度アクセスしてください。';
+    }
+
+    lucide.createIcons();
+  </script>
 </body>
 </html>
