@@ -1,6 +1,7 @@
 """
 GET /api/auth?guild=GUILD_ID&user=USER_ID
 → Redirects to Discord OAuth2 with CSRF state cookie
+IDK.lua
 """
 import os
 import json
