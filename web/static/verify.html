@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Discord 認証</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a1b26;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    padding: 1rem;
+  }
+  .card {
+    background: #24283b;
+    border: 1px solid #5865f2;
+    border-radius: 16px;
+    padding: 2.5rem;
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .icon { font-size: 3rem; margin-bottom: 1rem; }
+  h1 { color: #5865f2; font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; }
+  p { color: #c0c5d0; line-height: 1.7; margin-bottom: 1rem; }
+  .btn {
+    display: inline-block;
+    background: #5865f2;
+    color: #fff;
+    text-decoration: none;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    transition: background 0.2s;
+  }
+  .btn:hover { background: #4752c4; }
+  .note { color: #6b7280; font-size: 0.85rem; line-height: 1.6; }
+  .success h1 { color: #57f287; }
+  .success { border-color: #57f287; }
+  .error h1 { color: #ed4245; }
+  .error { border-color: #ed4245; }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="icon" id="icon">⏳</div>
+  <h1 id="title">読み込み中...</h1>
+  <p id="desc"></p>
+  <div id="extra"></div>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const status = params.get('status');
+const reason = params.get('reason');
+const guild = params.get('guild');
+const user = params.get('user');
+
+const card = document.getElementById('card');
+const icon = document.getElementById('icon');
+const title = document.getElementById('title');
+const desc = document.getElementById('desc');
+const extra = document.getElementById('extra');
+
+const errors = {
+  email_domain_blocked: '🚫 このメールドメインは認証が許可されていません。',
+  vpn_detected: '🚫 VPN・プロキシからのアクセスは許可されていません。',
+  email_already_used: '⚠️ このメールアドレスは既に別のアカウントで使用されています。',
+  ip_already_used: '⚠️ このIPアドレスは既に別のアカウントで使用されています。',
+  user_mismatch: '❌ ユーザー情報が一致しません。再度やり直してください。',
+  email_not_verified: '📧 Discordのメールアドレスが未確認です。',
+  guild_not_configured: '⚙️ サーバーの設定が完了していません。管理者にお問い合わせください。',
+  token_exchange_failed: '❌ 認証に失敗しました。再度お試しください。',
+  invalid_request: '❌ 無効なリクエストです。',
+  invalid_state: '❌ セキュリティエラー。再度やり直してください。',
+  state_mismatch: '❌ セキュリティエラー。再度やり直してください。',
+};
+
+if (!status && guild && user) {
+  // Show verify start page
+  icon.textContent = '🔐';
+  title.textContent = 'Discord 認証';
+  desc.textContent = 'このサーバーに参加するには認証が必要です。\n下のボタンをクリックしてDiscordでログインしてください。';
+  extra.innerHTML = `
+    <a class="btn" href="/api/auth?guild=${encodeURIComponent(guild)}&user=${encodeURIComponent(user)}">✅ 認証を開始する</a>
+    <p class="note">📧 メールアドレスとサーバー参加の権限が必要です。<br>🔒 情報はセキュアに管理されます。</p>
+  `;
+} else if (status === 'success') {
+  card.className = 'card success';
+  icon.textContent = '✅';
+  title.textContent = '認証完了！';
+  desc.textContent = '認証が完了しました。Discordに戻るとサーバーに参加できます。';
+  extra.innerHTML = '<p class="note">このページを閉じて構いません。</p>';
+} else if (status === 'error') {
+  card.className = 'card error';
+  icon.textContent = '❌';
+  title.textContent = '認証エラー';
+  desc.textContent = errors[reason] || '❌ 予期しないエラーが発生しました。';
+  extra.innerHTML = '<p class="note">問題が続く場合はサーバーの管理者にお問い合わせください。</p>';
+} else {
+  icon.textContent = '❓';
+  title.textContent = 'ページが見つかりません';
+  desc.textContent = '無効なURLです。';
+}
+</script>
+</body>
+</html>

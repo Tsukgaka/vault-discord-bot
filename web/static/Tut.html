@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Vercel デプロイ手順 | Discord Auth Bot</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0f;
+  --surface:#12121a;
+  --surface2:#1a1a28;
+  --border:#2a2a3d;
+  --accent:#7c3aed;
+  --accent2:#5865f2;
+  --green:#22c55e;
+  --yellow:#f59e0b;
+  --red:#ef4444;
+  --text:#e2e8f0;
+  --muted:#64748b;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;line-height:1.7;min-height:100vh}
+
+/* HEADER */
+header{background:linear-gradient(135deg,#0f0f1a,#1a1028);border-bottom:1px solid var(--border);padding:3rem 2rem;text-align:center;position:relative;overflow:hidden}
+header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(124,58,237,.25),transparent)}
+.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.4);border-radius:99px;padding:.3rem 1rem;font-size:.8rem;color:#a78bfa;margin-bottom:1.5rem}
+h1{font-size:clamp(1.8rem,5vw,3rem);font-weight:800;background:linear-gradient(135deg,#fff 30%,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.75rem}
+header p{color:var(--muted);font-size:1.05rem;max-width:560px;margin:0 auto}
+
+/* LAYOUT */
+.container{max-width:860px;margin:0 auto;padding:3rem 1.5rem}
+
+/* PROGRESS */
+.progress-bar{display:flex;gap:0;margin-bottom:3rem;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+.pb-step{flex:1;padding:.6rem .5rem;text-align:center;font-size:.72rem;font-weight:600;background:var(--surface);color:var(--muted);border-right:1px solid var(--border);cursor:default;transition:.2s}
+.pb-step:last-child{border-right:none}
+.pb-step.done{background:rgba(34,197,94,.1);color:var(--green)}
+.pb-step span{display:block;font-size:.95rem}
+
+/* STEP CARD */
+.step{background:var(--surface);border:1px solid var(--border);border-radius:16px;margin-bottom:2rem;overflow:hidden;transition:border-color .2s}
+.step:hover{border-color:rgba(124,58,237,.4)}
+.step-header{display:flex;align-items:center;gap:1rem;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);background:var(--surface2)}
+.step-num{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;flex-shrink:0}
+.step-title{font-weight:700;font-size:1.1rem}
+.step-sub{font-size:.8rem;color:var(--muted);margin-top:.1rem}
+.step-body{padding:1.5rem}
+
+/* IMAGE */
+.img-wrap{border-radius:12px;overflow:hidden;border:1px solid var(--border);margin:1rem 0 1.25rem;background:#0d0d16}
+.img-wrap img{width:100%;display:block;border-radius:11px}
+.img-cap{text-align:center;font-size:.78rem;color:var(--muted);padding:.5rem;border-top:1px solid var(--border)}
+
+/* CODE */
+pre{background:#0d0d16;border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;font-family:'JetBrains Mono',monospace;font-size:.85rem;overflow-x:auto;margin:.75rem 0}
+code{font-family:'JetBrains Mono',monospace;background:rgba(124,58,237,.15);padding:.15em .4em;border-radius:4px;font-size:.88em;color:#c4b5fd}
+
+/* ALERT BOXES */
+.alert{display:flex;gap:.75rem;padding:1rem 1.25rem;border-radius:10px;margin:.75rem 0;font-size:.9rem}
+.alert-tip{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);color:#86efac}
+.alert-warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);color:#fcd34d}
+.alert-info{background:rgba(88,101,242,.1);border:1px solid rgba(88,101,242,.35);color:#a5b4fc}
+.alert-icon{font-size:1.2rem;flex-shrink:0}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;font-size:.88rem;margin:.75rem 0}
+th{background:var(--surface2);padding:.6rem 1rem;text-align:left;font-weight:600;color:var(--muted);border:1px solid var(--border)}
+td{padding:.6rem 1rem;border:1px solid var(--border);vertical-align:top}
+td code{word-break:break-all}
+tr:hover td{background:rgba(255,255,255,.02)}
+
+/* LIST */
+ol.steps{padding-left:1.4rem}
+ol.steps li{margin:.5rem 0;color:var(--text)}
+ul.checks{list-style:none;padding:0}
+ul.checks li{padding:.35rem 0;padding-left:1.5rem;position:relative}
+ul.checks li::before{content:'✓';position:absolute;left:0;color:var(--green);font-weight:700}
+
+/* TAG */
+.tag{display:inline-block;padding:.2rem .6rem;border-radius:6px;font-size:.75rem;font-weight:600;margin-right:.3rem}
+.tag-required{background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.3)}
+.tag-optional{background:rgba(100,116,139,.15);color:#94a3b8;border:1px solid rgba(100,116,139,.3)}
+
+/* DIVIDER */
+.divider{border:none;border-top:1px solid var(--border);margin:1.5rem 0}
+
+/* FINAL */
+.final{background:linear-gradient(135deg,rgba(34,197,94,.08),rgba(124,58,237,.08));border:1px solid rgba(34,197,94,.25);border-radius:16px;padding:2rem;text-align:center;margin-top:2rem}
+.final h2{font-size:1.5rem;font-weight:800;color:var(--green);margin-bottom:.5rem}
+.final p{color:var(--muted)}
+
+footer{text-align:center;padding:2rem;color:var(--muted);font-size:.82rem;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hero-badge">🚀 デプロイガイド</div>
+  <h1>Vercel デプロイ 完全手順</h1>
+  <p>Discord Auth Bot を Vercel にアップロードするための<br>ステップバイステップ チュートリアル</p>
+</header>
+
+<div class="container">
+
+  <!-- PROGRESS -->
+  <div class="progress-bar">
+    <div class="pb-step done"><span>①</span>準備</div>
+    <div class="pb-step done"><span>②</span>GitHub</div>
+    <div class="pb-step done"><span>③</span>Import</div>
+    <div class="pb-step done"><span>④</span>設定</div>
+    <div class="pb-step done"><span>⑤</span>環境変数</div>
+    <div class="pb-step done"><span>⑥</span>Discord</div>
+    <div class="pb-step done"><span>⑦</span>完了</div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-title">事前準備 — アカウント & ツール</div>
+        <div class="step-sub">必要なものを揃える</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ul class="checks">
+        <li><strong>GitHub アカウント</strong>（無料）— <a href="https://github.com" style="color:#a78bfa">github.com</a></li>
+        <li><strong>Vercel アカウント</strong>（無料）— <a href="https://vercel.com" style="color:#a78bfa">vercel.com</a></li>
+        <li><strong>Git</strong> インストール済み — <a href="https://git-scm.com" style="color:#a78bfa">git-scm.com</a></li>
+        <li>Discord Developer Portal の Client ID / Secret 取得済み</li>
+        <li>Discord Bot Token 取得済み</li>
+      </ul>
+      <div class="alert alert-tip">
+        <span class="alert-icon">💡</span>
+        <div>Vercel は GitHub アカウントで直接サインアップできます。新規登録は不要です。</div>
+      </div>
+
+      <div class="img-wrap">
+        <img src="C:\Users\PZ\.gemini\antigravity\brain\abde376f-799f-469b-bf06-1b2495290852\vercel_signup_1777634561008.png" alt="Vercel サインアップ画面"/>
+        <div class="img-cap">▲ vercel.com にアクセス → 「Continue with GitHub」をクリック</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-title">GitHub にリポジトリをアップロード</div>
+        <div class="step-sub">プロジェクトをGitHubへPush</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <p>Vercel はGitHubリポジトリから直接デプロイします。まずローカルのプロジェクトをGitHubへ上げます。</p>
+      <hr class="divider"/>
+      <p><strong>① GitHubで新しいリポジトリを作成</strong></p>
+      <ol class="steps">
+        <li><a href="https://github.com/new" style="color:#a78bfa">github.com/new</a> にアクセス</li>
+        <li>Repository name: <code>discord-auth-bot-py</code></li>
+        <li>Private または Public を選択</li>
+        <li>「Create repository」をクリック</li>
+      </ol>
+      <hr class="divider"/>
+      <p><strong>② ローカルからPush（PowerShell / ターミナル）</strong></p>
+      <pre>cd C:\Users\PZ\Downloads\discord-auth-bot-py\discord-auth-bot
+
+git init
+git add .
+git commit -m "initial commit"
+git branch -M main
+git remote add origin https://github.com/あなたのユーザー名/discord-auth-bot-py.git
+git push -u origin main</pre>
+
+      <div class="img-wrap">
+        <img src="C:\Users\PZ\.gemini\antigravity\brain\abde376f-799f-469b-bf06-1b2495290852\github_repo_1777634579040.png" alt="GitHubリポジトリ"/>
+        <div class="img-cap">▲ Push完了後のGitHubリポジトリ — web/, bot/, vercel.json が確認できればOK</div>
+      </div>
+
+      <div class="alert alert-warn">
+        <span class="alert-icon">⚠️</span>
+        <div><strong>.env ファイルは絶対にPushしない！</strong> 環境変数は Vercel のダッシュボードで設定します。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <div>
+        <div class="step-title">Vercel にプロジェクトをImport</div>
+        <div class="step-sub">GitHubリポジトリを接続する</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ol class="steps">
+        <li><a href="https://vercel.com/new" style="color:#a78bfa">vercel.com/new</a> にアクセス</li>
+        <li>「Import Git Repository」セクションで <code>discord-auth-bot-py</code> を探す</li>
+        <li>右側の <strong>「Import」</strong> ボタンをクリック</li>
+      </ol>
+
+      <div class="img-wrap">
+        <img src="C:\Users\PZ\.gemini\antigravity\brain\abde376f-799f-469b-bf06-1b2495290852\vercel_import_1777634694298.png" alt="Vercel Import画面"/>
+        <div class="img-cap">▲ リポジトリ一覧から discord-auth-bot-py を選択して Import</div>
+      </div>
+
+      <div class="alert alert-info">
+        <span class="alert-icon">ℹ️</span>
+        <div>リポジトリが表示されない場合は「Adjust GitHub App Permissions」をクリックしてアクセス許可を追加してください。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">4</div>
+      <div>
+        <div class="step-title">プロジェクト設定 (Configure Project)</div>
+        <div class="step-sub">フレームワーク・ルートディレクトリを指定</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <table>
+        <tr><th>項目</th><th>設定値</th><th>説明</th></tr>
+        <tr><td>Framework Preset</td><td><code>Other</code></td><td>フレームワークなし（Python Serverless）</td></tr>
+        <tr><td>Root Directory</td><td><code>web</code></td><td>webフォルダをルートに指定</td></tr>
+        <tr><td>Build Command</td><td>（空欄）</td><td>ビルド不要</td></tr>
+        <tr><td>Output Directory</td><td>（空欄）</td><td>Vercelが自動検出</td></tr>
+        <tr><td>Install Command</td><td><code>pip install -r requirements.txt</code></td><td>依存パッケージインストール</td></tr>
+      </table>
+
+      <div class="img-wrap">
+        <img src="C:\Users\PZ\.gemini\antigravity\brain\abde376f-799f-469b-bf06-1b2495290852\vercel_config_1777634775166.png" alt="Vercel設定画面"/>
+        <div class="img-cap">▲ Configure Project — Root Directory を "web" に変更するのが最重要</div>
+      </div>
+
+      <div class="alert alert-warn">
+        <span class="alert-icon">⚠️</span>
+        <div><strong>Root Directory は必ず <code>web</code> に設定！</strong> デフォルトのままだと api/ が見つからずエラーになります。</div>
+      </div>
+
+      <p style="margin-top:1rem"><strong>vercel.json の内容を確認</strong>（すでに存在するはずです）</p>
+      <pre>{
+  "version": 2,
+  "builds": [
+    { "src": "api/*.py", "use": "@vercel/python" },
+    { "src": "static/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1.py" },
+    { "src": "/(.*)", "dest": "/static/$1" }
+  ]
+}</pre>
+    </div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">5</div>
+      <div>
+        <div class="step-title">環境変数 (Environment Variables) の設定</div>
+        <div class="step-sub">シークレット情報をVercelに登録</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <p>Deploy前 または Settings → Environment Variables から以下を登録します。</p>
+
+      <table>
+        <tr><th>キー名</th><th>値の例</th><th></th></tr>
+        <tr>
+          <td><code>DISCORD_CLIENT_ID</code></td>
+          <td><code>123456789012345678</code></td>
+          <td><span class="tag tag-required">必須</span></td>
+        </tr>
+        <tr>
+          <td><code>DISCORD_CLIENT_SECRET</code></td>
+          <td><code>aBcDeFgH1234567890aBcDeF</code></td>
+          <td><span class="tag tag-required">必須</span></td>
+        </tr>
+        <tr>
+          <td><code>DISCORD_BOT_TOKEN</code></td>
+          <td><code>MTIz...（長いトークン）</code></td>
+          <td><span class="tag tag-required">必須</span></td>
+        </tr>
+        <tr>
+          <td><code>WEB_URL</code></td>
+          <td><code>https://あなたのプロジェクト.vercel.app</code></td>
+          <td><span class="tag tag-required">必須</span></td>
+        </tr>
+        <tr>
+          <td><code>VERIFIED_ROLE_ID</code></td>
+          <td><code>987654321098765432</code></td>
+          <td><span class="tag tag-optional">任意</span></td>
+        </tr>
+        <tr>
+          <td><code>SUPABASE_URL</code></td>
+          <td><code>https://xxxx.supabase.co</code></td>
+          <td><span class="tag tag-required">必須</span></td>
+        </tr>
+        <tr>
+          <td><code>SUPABASE_KEY</code></td>
+          <td><code>eyJhbGc...（Supabaseキー）</code></td>
+          <td><span class="tag tag-required">必須</span></td>
+        </tr>
+      </table>
+
+      <div class="img-wrap">
+        <img src="C:\Users\PZ\.gemini\antigravity\brain\abde376f-799f-469b-bf06-1b2495290852\vercel_envvars_1777634857901.png" alt="環境変数設定画面"/>
+        <div class="img-cap">▲ Settings → Environment Variables → キーと値を入力して「Save」</div>
+      </div>
+
+      <div class="alert alert-tip">
+        <span class="alert-icon">💡</span>
+        <div>環境変数を追加・変更したあとは必ず <strong>「Redeploy」</strong> しないと反映されません。</div>
+      </div>
+
+      <p><strong>どこで値を取得するか</strong></p>
+      <ul class="checks">
+        <li><code>DISCORD_CLIENT_ID / SECRET</code> → Discord Developer Portal → OAuth2</li>
+        <li><code>DISCORD_BOT_TOKEN</code> → Developer Portal → Bot → Reset Token</li>
+        <li><code>WEB_URL</code> → Vercel デプロイ完了後に表示されるURL</li>
+        <li><code>SUPABASE_URL / KEY</code> → Supabase → Project Settings → API</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- STEP 6 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">6</div>
+      <div>
+        <div class="step-title">Discord Developer Portal の設定</div>
+        <div class="step-sub">Redirect URI を登録する</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ol class="steps">
+        <li><a href="https://discord.com/developers/applications" style="color:#a78bfa">discord.com/developers/applications</a> を開く</li>
+        <li>対象アプリを選択 → 左メニュー <strong>「OAuth2」</strong></li>
+        <li>「Redirects」セクションの <strong>「Add Another」</strong> をクリック</li>
+        <li>以下のURLを入力して「Save Changes」</li>
+      </ol>
+
+      <pre>https://あなたのプロジェクト名.vercel.app/api/callback</pre>
+
+      <div class="alert alert-warn">
+        <span class="alert-icon">⚠️</span>
+        <div>このURLは <code>WEB_URL</code> 環境変数と<strong>完全に一致</strong>させてください。末尾スラッシュの有無も要注意。</div>
+      </div>
+
+      <hr class="divider"/>
+
+      <p><strong>OAuth2 Scopes の確認</strong>（認証リンク生成時に必要）</p>
+      <ul class="checks">
+        <li><code>identify</code> — ユーザーID・名前取得</li>
+        <li><code>email</code> — メールアドレス取得（必須）</li>
+        <li><code>guilds.join</code> — サーバーに自動参加</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- STEP 7 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">7</div>
+      <div>
+        <div class="step-title">デプロイ実行 & 確認</div>
+        <div class="step-sub">いよいよ本番デプロイ！</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <ol class="steps">
+        <li>ステップ4・5の設定後 → <strong>「Deploy」</strong> ボタンをクリック</li>
+        <li>ビルドログが流れ始める（1〜3分）</li>
+        <li>🎉 「Congratulations!」が表示されればデプロイ完了</li>
+        <li>表示されたURLにアクセスして動作確認</li>
+      </ol>
+
+      <div class="img-wrap">
+        <img src="C:\Users\PZ\.gemini\antigravity\brain\abde376f-799f-469b-bf06-1b2495290852\vercel_success_1777635066635.png" alt="デプロイ成功画面"/>
+        <div class="img-cap">▲ 緑のチェックマーク → デプロイ成功！URLをコピーして WEB_URL に設定する</div>
+      </div>
+
+      <hr class="divider"/>
+      <p><strong>動作確認チェックリスト</strong></p>
+      <ul class="checks">
+        <li><code>https://xxx.vercel.app/verify?guild=ID&user=USER_ID</code> でページが表示される</li>
+        <li>「認証を開始する」→ Discord OAuth2 画面にリダイレクトされる</li>
+        <li>認証後 <code>/api/callback</code> が呼ばれ成功ページが表示される</li>
+        <li>ログチャンネルに認証ログが届く</li>
+      </ul>
+
+      <hr class="divider"/>
+      <p><strong>エラーが出たときの対処</strong></p>
+      <table>
+        <tr><th>エラー</th><th>原因・対処</th></tr>
+        <tr><td><code>invalid_request</code></td><td>URLパラメータ不足。認証リンクを再生成</td></tr>
+        <tr><td><code>token_exchange_failed</code></td><td>CLIENT_ID/SECRET が間違い。環境変数を確認</td></tr>
+        <tr><td><code>state_mismatch</code></td><td>Cookieが消えた。ブラウザの設定を確認</td></tr>
+        <tr><td><code>email_domain_blocked</code></td><td>ブロック済みドメイン（usagica.com等）のメール</td></tr>
+        <tr><td>500 Internal Server Error</td><td>Vercel Logs → Functionsタブでエラー詳細を確認</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- STEP 8: コードの更新 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">8</div>
+      <div>
+        <div class="step-title">コードの更新（再デプロイ）</div>
+        <div class="step-sub">コード変更を反映させる方法</div>
+      </div>
+    </div>
+    <div class="step-body">
+      <p>GitHubの <code>main</code> ブランチにpushするだけで<strong>自動的に再デプロイ</strong>されます。</p>
+      <pre>git add .
+git commit -m "fix: メールドメインブロック追加"
+git push</pre>
+      <div class="alert alert-tip">
+        <span class="alert-icon">💡</span>
+        <div>Vercel ダッシュボード → Deployments タブでリアルタイムのビルドログを確認できます。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINAL -->
+  <div class="final">
+    <h2>🎉 デプロイ完了！</h2>
+    <p>すべてのステップが完了すれば Discord Auth Bot が稼働中です。<br>
+    問題が発生した場合は Vercel の <strong>Functions ログ</strong> を確認してください。</p>
+  </div>
+
+</div>
+
+<footer>Discord Auth Bot — Vercel Deploy Tutorial</footer>
+</body>
+</html>
