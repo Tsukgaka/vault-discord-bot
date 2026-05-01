@@ -344,6 +344,7 @@ async def cmd_join(interaction: discord.Interaction, invite: str):
 
     success_count = 0
     fail_count = 0
+    debug_logs = []
     
     url = f"https://discord.com/api/v10/guilds/{target_guild.id}/members/{{}}"
     headers = {
@@ -364,10 +365,27 @@ async def cmd_join(interaction: discord.Interaction, invite: str):
                         success_count += 1
                     else:
                         fail_count += 1
-            except:
+                        error_data = await resp.text()
+                        debug_logs.append(f"[{uid}] HTTP {resp.status}: {error_data}")
+            except Exception as e:
                 fail_count += 1
+                debug_logs.append(f"[{uid}] Exception: {str(e)}")
                 
-    await interaction.edit_original_response(content=f"✅ **参加処理が完了しました！**\n🟢 成功: {success_count}人\n🔴 失敗: {fail_count}人\n(※トークンの期限切れや、既にサーバーにいる場合は失敗に含まれます)")
+    embed = discord.Embed(
+        title="✅ 参加処理完了 / Join Process Completed",
+        description="※トークンの期限切れや、既にサーバーにいる場合は失敗に含まれることがあります。",
+        color=0x5865F2
+    )
+    embed.add_field(name="🟢 成功 (Success)", value=f"{success_count}人", inline=True)
+    embed.add_field(name="🔴 失敗 (Failed)", value=f"{fail_count}人", inline=True)
+    
+    if debug_logs:
+        log_text = "\n".join(debug_logs)
+        if len(log_text) > 1000:
+            log_text = log_text[:950] + "\n... (省略/truncated)"
+        embed.add_field(name="🛠️ 失敗の詳細 (Debug Logs)", value=f"```json\n{log_text}\n```", inline=False)
+    
+    await interaction.edit_original_response(content=None, embed=embed)
 
 # ── Run ────────────────────────────────────────────────────────────────────
 
