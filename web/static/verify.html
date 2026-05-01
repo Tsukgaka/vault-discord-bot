@@ -291,6 +291,7 @@
         title.textContent = t.error_title;
         desc.textContent = t.errors[reason] || (currentLang === 'ja' ? '不明なエラーが発生しました。' : 'An unknown error occurred.');
         extra.innerHTML = `
+          <p class="note" style="margin-bottom: 15px; color: var(--error); font-family: monospace;">Error Code: ${reason}</p>
           <a class="btn" href="javascript:location.reload()"><i data-lucide="refresh-cw" style="width:14px"></i> ${t.error_retry}</a>
           <p class="note">${t.error_note}</p>
         `;
