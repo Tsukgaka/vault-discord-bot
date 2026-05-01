@@ -68,7 +68,7 @@ async def process_verifications():
                     # 2. Send DM
                     try:
                         view = AuthDMView(guild.name, "ja")
-                        msg = f"<:emoji_29:484692916428472402> **{guild.name}** の認証が完了しました！\nサーバーをお楽しみください。"
+                        msg = f"✅ **{guild.name}** の認証が完了しました！\nサーバーをお楽しみください。"
                         await member.send(content=msg, view=view)
                         print(f"✅ DM sent to {user_id}")
                     except Exception as e:
@@ -144,7 +144,7 @@ async def cmd_panel(interaction: discord.Interaction, role: discord.Role):
         auth_url = f"{web_url}/api/auth?guild={interaction.guild_id}&user={interaction.user.id}&role={role.id}"
 
         embed = discord.Embed(
-            title="<:emoji_29:484692916428472402> 認証 / Verification",
+            title="✅ 認証 / Verification",
             description="サーバーに参加するには下のボタンを押して認証を完了してください。\n\nClick the button below to verify.",
             color=0x5865F2
         )
@@ -277,9 +277,9 @@ class DMLangSelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction):
         lang = self.values[0]
         if lang == "ja":
-            msg = f"<:emoji_29:484692916428472402> **{self.guild_name}** の認証が完了しました！\nサーバーをお楽しみください。"
+            msg = f"✅ **{self.guild_name}** の認証が完了しました！\nサーバーをお楽しみください。"
         else:
-            msg = f"<:emoji_29:484692916428472402> Authentication for **{self.guild_name}** is complete!\nEnjoy the server."
+            msg = f"✅ Authentication for **{self.guild_name}** is complete!\nEnjoy the server."
         
         await interaction.response.edit_message(content=msg, view=AuthDMView(self.guild_name, lang))
 
@@ -331,7 +331,7 @@ async def cmd_join(interaction: discord.Interaction, invite: str):
             except:
                 fail_count += 1
                 
-    await interaction.edit_original_response(content=f"<:emoji_29:484692916428472402> **参加処理が完了しました！**\n✅ 成功: {success_count}人\n❌ 失敗: {fail_count}人\n(※トークンの期限切れや、既にサーバーにいる場合は失敗に含まれます)")
+    await interaction.edit_original_response(content=f"✅ **参加処理が完了しました！**\n🟢 成功: {success_count}人\n🔴 失敗: {fail_count}人\n(※トークンの期限切れや、既にサーバーにいる場合は失敗に含まれます)")
 
 # ── Run ────────────────────────────────────────────────────────────────────
 
