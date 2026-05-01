@@ -46,14 +46,14 @@ def check_duplicates(guild_id: str, ip_hash: str, email_hash: str, discord_id: s
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT 1 FROM verified_users WHERE guild_id = %s AND ip_hash = %s LIMIT 1",
-                (guild_id, ip_hash),
+                "SELECT 1 FROM verified_users WHERE guild_id = %s AND ip_hash = %s AND discord_id != %s LIMIT 1",
+                (guild_id, ip_hash, discord_id),
             )
             ip_exists = cur.fetchone() is not None
 
             cur.execute(
-                "SELECT 1 FROM verified_users WHERE guild_id = %s AND email_hash = %s LIMIT 1",
-                (guild_id, email_hash),
+                "SELECT 1 FROM verified_users WHERE guild_id = %s AND email_hash = %s AND discord_id != %s LIMIT 1",
+                (guild_id, email_hash, discord_id),
             )
             email_exists = cur.fetchone() is not None
 
