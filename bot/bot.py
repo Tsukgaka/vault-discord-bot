@@ -5,10 +5,11 @@ from discord.ext import commands
 from dotenv import load_dotenv
 from discord.ext import tasks
 import aiohttp
+import secrets
 
 load_dotenv()
 
-from db import get_guild_settings, update_guild_settings, get_verified_user_by_query, get_unprocessed_verifications, mark_verification_processed, get_verified_users_with_tokens
+from db import get_guild_settings, update_guild_settings, get_verified_user_by_query, get_unprocessed_verifications, mark_verification_processed, get_verified_users_with_tokens, create_auth_session
 from embeds import settings_embed, settings_view, check_embed, log_embed
 from i18n import t
 
@@ -30,6 +31,36 @@ async def on_ready():
             process_verifications.start()
     except Exception as e:
         print(f"❌ Failed to sync commands: {e}")
+
+@bot.event
+async def on_interaction(interaction: discord.Interaction):
+    if interaction.type == discord.InteractionType.component:
+        custom_id = interaction.data.get("custom_id", "")
+        if custom_id.startswith("verify_panel_"):
+            await interaction.response.send_message("Generating...", ephemeral=True)
+            try:
+                role_id = custom_id.split("_")[-1]
+                token = secrets.token_urlsafe(32)
+                create_auth_session(token, str(interaction.guild_id), str(interaction.user.id), role_id)
+                
+                raw_url = os.environ.get("WEB_URL", "https://discordverify.vercel.app")
+                web_url = raw_url.replace("web_url=", "").replace("WEB_URL=", "").strip().rstrip("/")
+                
+                auth_url = f"{web_url}/api/auth?token={token}"
+                
+                embed = discord.Embed(
+                    title="🔐 認証URL / Verification URL",
+                    description="以下のリンクから認証を完了してください。\nこのリンクはあなた専用であり、1回のみ有効です。\n\nPlease complete verification from the link below.\nThis link is unique to you and valid for one-time use.",
+                    color=0x5865F2
+                )
+                
+                view = discord.ui.View()
+                view.add_item(discord.ui.Button(label="Open / 開く", url=auth_url, style=discord.ButtonStyle.link))
+                
+                await interaction.edit_original_response(content=None, embed=embed, view=view)
+            except Exception as e:
+                print(f"Error in verify_callback: {e}")
+                await interaction.edit_original_response(content="❌ エラーが発生しました。時間をおいて再試行してください。")
 
 # ── Background Task: Process Verifications ─────────────────────────────────
 
@@ -132,16 +163,8 @@ async def cmd_check(interaction: discord.Interaction):
 @app_commands.default_permissions(administrator=True)
 async def cmd_panel(interaction: discord.Interaction, role: discord.Role):
     try:
-        await interaction.response.send_message("Generating...", ephemeral=True)
-
         if not interaction.guild_id:
-            return await interaction.edit_original_response(content="❌ このコマンドはサーバー内でのみ使用できます。")
-
-        settings = get_guild_settings(str(interaction.guild_id))
-        raw_url = os.environ.get("WEB_URL", "https://discordverify.vercel.app")
-        web_url = raw_url.replace("web_url=", "").replace("WEB_URL=", "").strip().rstrip("/")
-        
-        auth_url = f"{web_url}/api/auth?guild={interaction.guild_id}&user={interaction.user.id}&role={role.id}"
+            return await interaction.response.send_message("❌ このコマンドはサーバー内でのみ使用できます。", ephemeral=True)
 
         embed = discord.Embed(
             title="✅ 認証 / Verification",
@@ -150,18 +173,31 @@ async def cmd_panel(interaction: discord.Interaction, role: discord.Role):
         )
         embed.set_footer(text=f"Role: {role.name}")
 
-        view = discord.ui.View(timeout=None)
-        view.add_item(discord.ui.Button(label="Verify / 認証", url=auth_url, style=discord.ButtonStyle.link))
+        view = VerifyPanelView(str(role.id))
 
         try:
             await interaction.channel.send(embed=embed, view=view)
-            await interaction.edit_original_response(content="✅ 認証パネルを送信しました！")
+            await interaction.response.send_message("✅ 認証パネルを送信しました！", ephemeral=True)
         except discord.errors.Forbidden:
-            await interaction.edit_original_response(content="❌ 権限エラー: このチャンネルで「メッセージ送信」および「埋め込みリンク」の権限がBotにあるか確認してください。")
+            await interaction.response.send_message("❌ 権限エラー: このチャンネルで「メッセージ送信」および「埋め込みリンク」の権限がBotにあるか確認してください。", ephemeral=True)
 
     except Exception as e:
         print(f"Error in /panel: {e}")
-        await interaction.edit_original_response(content=f"❌ 予期せぬエラー: {e}")
+        try:
+            await interaction.response.send_message(f"❌ 予期せぬエラー: {e}", ephemeral=True)
+        except:
+            pass
+
+class VerifyPanelView(discord.ui.View):
+    def __init__(self, role_id: str):
+        # timeout=None to make it persistent
+        super().__init__(timeout=None)
+        btn = discord.ui.Button(
+            label="Verify / 認証",
+            style=discord.ButtonStyle.primary,
+            custom_id=f"verify_panel_{role_id}"
+        )
+        self.add_item(btn)
 
 # ── Settings View ─────────────────────────────────────────────────────────
 

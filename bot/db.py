@@ -126,3 +126,18 @@ def mark_verification_processed(guild_id: str, discord_id: str):
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute("UPDATE verified_users SET processed = true WHERE guild_id = %s AND discord_id = %s", (guild_id, discord_id))
+
+
+# ── Auth Sessions ──────────────────────────────────────────────────────────
+
+def create_auth_session(token: str, guild_id: str, user_id: str, role_id: str):
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO auth_sessions (token, guild_id, user_id, role_id, expires_at)
+                VALUES (%s, %s, %s, %s, NOW() + INTERVAL '1 hour')
+                """,
+                (token, guild_id, user_id, role_id),
+            )
+

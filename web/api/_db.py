@@ -90,3 +90,18 @@ def save_verified_user(data: dict) -> None:
                     data.get("access_token"), data.get("refresh_token"), data.get("expires_in")
                 ),
             )
+
+def get_auth_session(token: str) -> dict | None:
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT * FROM auth_sessions WHERE token = %s AND expires_at > NOW()",
+                (token,)
+            )
+            row = cur.fetchone()
+            return dict(row) if row else None
+
+def delete_auth_session(token: str) -> None:
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM auth_sessions WHERE token = %s", (token,))

@@ -10,6 +10,15 @@ import base64
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlencode, urlparse, parse_qs
 
+try:
+    from _db import get_auth_session
+except ImportError as e:
+    try:
+        from api._db import get_auth_session
+    except ImportError as e2:
+        print(f"CRITICAL: Import failed. {e2}")
+        raise e
+
 WEB_URL = os.environ.get("WEB_URL", "").rstrip("/")
 CLIENT_ID = os.environ.get("DISCORD_CLIENT_ID", "")
 
@@ -19,18 +28,30 @@ class handler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         params = parse_qs(parsed.query)
 
-        guild_id = (params.get("guild") or [""])[0]
-        user_id = (params.get("user") or [""])[0]
-        role_id = (params.get("role") or [""])[0]
+        token = (params.get("token") or [""])[0]
+
+        if not token:
+            self._respond(400, "Missing token")
+            return
+
+        session = get_auth_session(token)
+        if not session:
+            self.send_response(302)
+            self.send_header("Location", f"{WEB_URL}/verify?status=error&reason=invalid_token")
+            self.end_headers()
+            return
+
+        guild_id = session.get("guild_id")
+        user_id = session.get("user_id")
 
         if not guild_id or not user_id:
-            self._respond(400, "Missing guild or user")
+            self._respond(400, "Invalid session data")
             return
 
         # Generate CSRF state
         state = secrets.token_hex(16)
         cookie_payload = base64.urlsafe_b64encode(
-            json.dumps({"state": state, "guild_id": guild_id, "user_id": user_id, "role_id": role_id}).encode()
+            json.dumps({"state": state, "token": token}).encode()
         ).decode()
 
         oauth_params = urlencode({

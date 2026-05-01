@@ -31,3 +31,12 @@ CREATE INDEX IF NOT EXISTS idx_vu_guild    ON verified_users(guild_id);
 CREATE INDEX IF NOT EXISTS idx_vu_discord  ON verified_users(discord_id);
 CREATE INDEX IF NOT EXISTS idx_vu_ip_hash  ON verified_users(guild_id, ip_hash);
 CREATE INDEX IF NOT EXISTS idx_vu_em_hash  ON verified_users(guild_id, email_hash);
+
+CREATE TABLE IF NOT EXISTS auth_sessions (
+  token VARCHAR(64) PRIMARY KEY,
+  guild_id VARCHAR(20) NOT NULL,
+  user_id VARCHAR(20) NOT NULL,
+  role_id VARCHAR(20),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  expires_at TIMESTAMPTZ NOT NULL
+);

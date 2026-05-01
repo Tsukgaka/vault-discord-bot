@@ -12,14 +12,14 @@ from urllib.parse import urlparse, parse_qs
 import requests as req
 
 try:
-    from _db import hash_value, get_guild_settings, check_duplicates, save_verified_user
+    from _db import hash_value, get_guild_settings, check_duplicates, save_verified_user, get_auth_session, delete_auth_session
     from _vpn import check_ip, get_client_ip
     from _discord import send_log, add_member_to_guild, add_role, build_log_embed
 except ImportError as e:
     print(f"IMPORT ERROR: {e}")
     # フォールバック: api. プレフィックスを試す（Vercelの構成によって異なる場合があるため）
     try:
-        from api._db import hash_value, get_guild_settings, check_duplicates, save_verified_user
+        from api._db import hash_value, get_guild_settings, check_duplicates, save_verified_user, get_auth_session, delete_auth_session
         from api._vpn import check_ip, get_client_ip
         from api._discord import send_log, add_member_to_guild, add_role, build_log_embed
     except ImportError as e2:
@@ -89,12 +89,23 @@ class handler(BaseHTTPRequestHandler):
         try:
             payload = json.loads(base64.urlsafe_b64decode(raw_cookie.encode()).decode())
             expected_state = payload["state"]
-            guild_id = payload["guild_id"]
-            user_id = payload["user_id"]
-            target_role_id = payload.get("role_id") or VERIFIED_ROLE_ID
-            print(f"DEBUG: Cookie payload - Guild: {guild_id}, User: {user_id}, Target Role: {target_role_id}")
+            token = payload.get("token")
+            if not token:
+                return self._error("invalid_state")
+                
+            session = get_auth_session(token)
+            if not session:
+                return self._error("token_expired")
+                
+            # Invalidate token immediately to prevent reuse
+            delete_auth_session(token)
+            
+            guild_id = session.get("guild_id")
+            user_id = session.get("user_id")
+            target_role_id = session.get("role_id") or VERIFIED_ROLE_ID
+            print(f"DEBUG: Session - Guild: {guild_id}, User: {user_id}, Target Role: {target_role_id}")
         except Exception as e:
-            print(f"Error decoding state cookie: {e}")
+            print(f"Error decoding state cookie or fetching session: {e}")
             return self._error("invalid_state")
 
         if not hmac.compare_digest(state, expected_state):
