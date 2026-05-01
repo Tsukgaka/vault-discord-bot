@@ -1,5 +1,6 @@
 import os
 import requests
+"""IDK"""
 
 BOT_TOKEN = os.environ["DISCORD_BOT_TOKEN"]
 BASE = "https://discord.com/api/v10"
