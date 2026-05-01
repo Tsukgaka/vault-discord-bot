@@ -101,14 +101,15 @@ async def process_verifications():
 @tree.command(name="set", description="認証Botの設定パネルを開く / Open settings panel")
 @app_commands.default_permissions(administrator=True)
 async def cmd_set(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
     try:
         settings = get_guild_settings(str(interaction.guild_id))
         embed = settings_embed(settings)
         view = SettingsView(settings)
-        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+        await interaction.edit_original_response(embed=embed, view=view)
     except Exception as e:
         print(f"Error in /set: {e}")
-        await interaction.response.send_message(f"❌ Error: {e}\n設定を取得できませんでした。データベースを確認してください。", ephemeral=True)
+        await interaction.edit_original_response(content=f"❌ Error: {e}\n設定を取得できませんでした。データベースを確認してください。")
 
 # ── /check command ─────────────────────────────────────────────────────────
 
@@ -116,12 +117,13 @@ async def cmd_set(interaction: discord.Interaction):
 @app_commands.default_permissions(administrator=True)
 async def cmd_check(interaction: discord.Interaction):
     try:
-        settings = get_guild_settings(str(interaction.guild_id))
-        lang = settings.get("language", "ja")
-        await interaction.response.send_modal(CheckModal(lang))
+        await interaction.response.send_modal(CheckModal("ja"))
     except Exception as e:
         print(f"Error in /check: {e}")
-        await interaction.response.send_message(f"❌ Error: {e}", ephemeral=True)
+        try:
+            await interaction.response.send_message(f"❌ Error: {e}", ephemeral=True)
+        except:
+            pass
 
 # ── /panel command ──────────────────────────────────────────────────────────
 
