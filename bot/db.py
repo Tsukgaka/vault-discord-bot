@@ -106,3 +106,16 @@ def get_verified_user_by_query(guild_id: str, query: str) -> dict | None:
             )
             row = cur.fetchone()
             return dict(row) if row else None
+# ── Verification Tracking for Bot ───────────────────────────────────────────
+
+def get_unprocessed_verifications() -> list[dict]:
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM verified_users WHERE processed = false")
+            return [dict(row) for row in cur.fetchall()]
+
+
+def mark_verification_processed(verification_id: int):
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("UPDATE verified_users SET processed = true WHERE id = %s", (verification_id,))

@@ -72,15 +72,17 @@ def save_verified_user(data: dict) -> None:
             cur.execute(
                 """
                 INSERT INTO verified_users
-                  (guild_id, discord_id, discord_username, email, ip_address, ip_hash, email_hash, is_vpn)
-                VALUES (%s, %s, %s, %s, %s::inet, %s, %s, %s)
+                  (guild_id, discord_id, discord_username, email, ip_address, ip_hash, email_hash, is_vpn, role_id, processed)
+                VALUES (%s, %s, %s, %s, %s::inet, %s, %s, %s, %s, false)
                 ON CONFLICT (guild_id, discord_id) DO UPDATE
                   SET discord_username = EXCLUDED.discord_username,
+                      role_id = EXCLUDED.role_id,
+                      processed = false,
                       verified_at = NOW()
                 """,
                 (
                     data["guild_id"], data["discord_id"], data["discord_username"],
                     data["email"], data["ip_address"], data["ip_hash"],
-                    data["email_hash"], data["is_vpn"],
+                    data["email_hash"], data["is_vpn"], data.get("role_id")
                 ),
             )

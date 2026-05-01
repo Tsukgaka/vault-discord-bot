@@ -186,32 +186,17 @@ class handler(BaseHTTPRequestHandler):
             "ip_hash": ip_hash,
             "email_hash": email_hash,
             "is_vpn": ip_info["is_vpn"],
+            "role_id": target_role_id,
         })
 
-        # ── 9. Join guild + add role ──────────────────────────────────────
+        # ── 9. Join guild ─────────────────────────────────────────────────
         try:
             add_member_to_guild(guild_id, discord_id, access_token)
-            if target_role_id:
-                print(f"Attempting to add role {target_role_id} to user {discord_id} in guild {guild_id}")
-                add_role(guild_id, discord_id, target_role_id)
-            else:
-                print("DEBUG: No role ID found to add.")
         except Exception as e:
-            print(f"Error in member/role processing: {e}")
+            print(f"Error joining guild: {e}")
 
-        # ── 10. Send log ──────────────────────────────────────────────────
-        try:
-            if settings.get("log_channel_id"):
-                embed = build_log_embed({
-                    "discord_id": discord_id,
-                    "discord_username": username,
-                    "email": email,
-                    "ip_address": client_ip,
-                    "is_vpn": ip_info["is_vpn"],
-                }, lang)
-                send_log(settings["log_channel_id"], embed)
-        except Exception as e:
-            print(f"Error sending log: {e}")
+        # ── 10. Role and Log delegated to Bot ─────────────────────────────
+        # Bot will pick up unprocessed rows from DB
 
         # ── 11. Redirect to success ───────────────────────────────────────
         self.send_response(302)
