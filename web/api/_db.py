@@ -10,15 +10,24 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
 @contextmanager
 def get_conn():
-    conn = psycopg2.connect(DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
+    if not DATABASE_URL:
+        print("CRITICAL: DATABASE_URL is not set!")
+        raise ValueError("DATABASE_URL is not set")
+    
     try:
-        yield conn
-        conn.commit()
-    except Exception:
-        conn.rollback()
+        conn = psycopg2.connect(DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
+        try:
+            yield conn
+            conn.commit()
+        except Exception as e:
+            print(f"Database transaction error: {e}")
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+    except Exception as e:
+        print(f"Database connection failed: {e}")
         raise
-    finally:
-        conn.close()
 
 
 def hash_value(value: str) -> str:

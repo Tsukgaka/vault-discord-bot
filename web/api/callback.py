@@ -11,9 +11,20 @@ from urllib.parse import urlparse, parse_qs
 
 import requests as req
 
-from _db import hash_value, get_guild_settings, check_duplicates, save_verified_user
-from _vpn import check_ip, get_client_ip
-from _discord import send_log, add_member_to_guild, add_role, build_log_embed
+try:
+    from _db import hash_value, get_guild_settings, check_duplicates, save_verified_user
+    from _vpn import check_ip, get_client_ip
+    from _discord import send_log, add_member_to_guild, add_role, build_log_embed
+except ImportError as e:
+    print(f"IMPORT ERROR: {e}")
+    # フォールバック: api. プレフィックスを試す（Vercelの構成によって異なる場合があるため）
+    try:
+        from api._db import hash_value, get_guild_settings, check_duplicates, save_verified_user
+        from api._vpn import check_ip, get_client_ip
+        from api._discord import send_log, add_member_to_guild, add_role, build_log_embed
+    except ImportError as e2:
+        print(f"CRITICAL: All import attempts failed. {e2}")
+        raise e
 
 # 環境変数の取得（存在しない場合はエラーではなくNoneを返すようにし、後でチェックする）
 WEB_URL = os.environ.get("WEB_URL", "").rstrip("/")
@@ -50,6 +61,17 @@ class handler(BaseHTTPRequestHandler):
             self._error("internal_error")
 
     def _handle_request(self):
+        # 環境変数チェック
+        missing_vars = []
+        if not WEB_URL: missing_vars.append("WEB_URL")
+        if not CLIENT_ID: missing_vars.append("DISCORD_CLIENT_ID")
+        if not CLIENT_SECRET: missing_vars.append("DISCORD_CLIENT_SECRET")
+        if not BOT_TOKEN: missing_vars.append("DISCORD_BOT_TOKEN")
+        
+        if missing_vars:
+            print(f"CRITICAL: Missing environment variables: {', '.join(missing_vars)}")
+            return self._error("config_error")
+
         parsed = urlparse(self.path)
         params = parse_qs(parsed.query)
 
