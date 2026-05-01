@@ -12,7 +12,7 @@
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
       --bg: #080b12;
-      --surface: rgba(255, 255, 255, 0.04);
+      --surface: rgba(255, 255, 255, 0.03);
       --border: rgba(255, 255, 255, 0.08);
       --border-h: rgba(255, 255, 255, 0.14);
       --text: #9aa0b0;
@@ -44,138 +44,107 @@
       background: radial-gradient(ellipse 88% 82% at 50% 50%, transparent 15%, rgba(3, 5, 8, 0.45) 55%, rgba(3, 5, 8, 0.93) 100%);
     }
 
-    /* ══ CARD ══ */
+    /* ══ LANGUAGE SELECTOR ══ */
+    .lang-switcher {
+      position: fixed; top: 20px; right: 20px; z-index: 100;
+      display: flex; gap: 8px;
+      background: rgba(255,255,255,0.03);
+      padding: 4px; border-radius: 8px; border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+    }
+    .lang-btn {
+      padding: 6px 12px; font-size: 11px; font-weight: 500; border-radius: 6px;
+      cursor: pointer; transition: all 0.2s; border: none; background: transparent;
+      color: var(--text-dim); font-family: var(--font);
+    }
+    .lang-btn.active { color: var(--text-hi); background: rgba(255,255,255,0.06); }
+    .lang-btn:hover:not(.active) { color: var(--text); }
+
+    /* ══ CARD (ULTRA TRANSPARENT) ══ */
     .card {
       position: relative;
       z-index: 10;
       width: 100%;
-      max-width: 460px;
-      background: rgba(10, 13, 20, 0.75);
-      backdrop-filter: blur(32px) saturate(150%);
-      -webkit-backdrop-filter: blur(32px) saturate(150%);
+      max-width: 440px;
+      background: rgba(255, 255, 255, 0.02); /* Extremely transparent */
+      backdrop-filter: blur(40px) saturate(160%);
+      -webkit-backdrop-filter: blur(40px) saturate(160%);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 50px 35px;
+      border-radius: 24px;
+      padding: 50px 32px;
       text-align: center;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.04);
-      opacity: 0;
-      transform: translateY(15px);
-      animation: fadeUp 0.6s 0.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      box-shadow: 0 32px 64px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      opacity: 0; transform: translateY(20px);
+      animation: fadeUp 0.8s 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    @keyframes fadeUp {
-      to { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
 
     .icon-wrapper {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 72px;
-      height: 72px;
-      background: rgba(255, 255, 255, 0.02);
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 68px; height: 68px;
+      background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: 18px;
       margin-bottom: 24px;
       color: var(--accent);
       transition: all 0.4s ease;
     }
-
-    .icon-wrapper svg { width: 32px; height: 32px; stroke-width: 1.5; }
+    .icon-wrapper svg { width: 30px; height: 30px; stroke-width: 1.5; }
 
     h1 {
-      font-size: 19px;
-      font-weight: 600;
-      color: var(--text-hi);
-      margin-bottom: 12px;
-      letter-spacing: -0.4px;
+      font-size: 18px; font-weight: 700; color: var(--text-hi);
+      margin-bottom: 12px; letter-spacing: -0.4px;
     }
 
     p {
-      font-size: 12px;
-      line-height: 1.7;
-      color: var(--text);
-      margin-bottom: 35px;
-      letter-spacing: 0.2px;
+      font-size: 11.5px; line-height: 1.7; color: var(--text);
+      margin-bottom: 35px; letter-spacing: 0.1px;
     }
 
     /* ══ BUTTON ══ */
     .btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      width: 100%;
-      height: 46px;
-      background: var(--surface);
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; width: 100%; height: 46px;
+      background: rgba(255,255,255,0.04);
       border: 1px solid var(--border);
       color: var(--text-hi);
-      text-decoration: none;
-      font-family: var(--font);
-      font-size: 11.5px;
-      font-weight: 500;
-      border-radius: 6px;
-      transition: all 0.2s;
-      margin-bottom: 24px;
-      letter-spacing: 0.4px;
+      text-decoration: none; font-family: var(--font);
+      font-size: 11px; font-weight: 600; border-radius: 10px;
+      transition: all 0.2s; margin-bottom: 20px;
     }
+    .btn:hover { background: rgba(255,255,255,0.08); border-color: var(--border-h); transform: translateY(-1px); }
 
-    .btn:hover {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: var(--border-h);
-      transform: translateY(-1px);
-    }
+    .btn.primary { background: var(--accent); border: none; color: #000; }
+    .btn.primary:hover { opacity: 0.9; box-shadow: 0 8px 24px rgba(232, 164, 74, 0.2); }
 
-    .btn.primary {
-      background: var(--accent);
-      border: none;
-      color: #000;
-      font-weight: 700;
-    }
-
-    .btn.primary:hover {
-      opacity: 0.85;
-      background: var(--accent);
-      box-shadow: 0 4px 15px rgba(232, 164, 74, 0.2);
-    }
-
-    .note {
-      font-size: 10px;
-      color: var(--text-dim);
-      line-height: 1.5;
-      letter-spacing: 0.3px;
-    }
+    .note { font-size: 10px; color: var(--text-dim); line-height: 1.6; }
 
     /* ══ STATUS VARIANTS ══ */
-    .success .icon-wrapper {
-      color: var(--success);
-      border-color: rgba(87, 242, 135, 0.25);
-      background: rgba(87, 242, 135, 0.03);
-    }
+    .success .icon-wrapper { color: var(--success); border-color: rgba(87, 242, 135, 0.2); }
     .success h1 { color: var(--success); }
-
-    .error .icon-wrapper {
-      color: var(--error);
-      border-color: rgba(237, 66, 69, 0.25);
-      background: rgba(237, 66, 69, 0.03);
-    }
+    .error .icon-wrapper { color: var(--error); border-color: rgba(237, 66, 69, 0.2); }
     .error h1 { color: var(--error); }
 
     .loading-spinner { animation: spin 2s linear infinite; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
   </style>
 </head>
 <body>
   <canvas id="bgCanvas"></canvas>
   <div class="vignette"></div>
+
+  <div class="lang-switcher">
+    <button class="lang-btn active" onclick="setLang('ja')">JP</button>
+    <button class="lang-btn" onclick="setLang('en')">EN</button>
+  </div>
   
   <div class="card" id="card">
     <div class="icon-wrapper" id="icon-box">
       <i data-lucide="loader-2" class="loading-spinner"></i>
     </div>
-    <h1 id="title">Initializing...</h1>
-    <p id="desc">Preparing your secure authentication session.</p>
+    <h1 id="title">Loading...</h1>
+    <p id="desc">...</p>
     <div id="extra"></div>
   </div>
 
@@ -187,8 +156,7 @@
       if(gl){
         const VS=`attribute vec2 a_pos; void main(){gl_Position=vec4(a_pos,0,1);}`;
         const FS=`
-          precision highp float;
-          uniform vec2 u_res; uniform float u_time;
+          precision highp float; uniform vec2 u_res; uniform float u_time;
           float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
           float vnoise(vec2 p){
             vec2 i=floor(p), f=fract(p);
@@ -207,13 +175,10 @@
             return fbm(p+1.8*r);
           }
           void main(){
-            vec2 uv=gl_FragCoord.xy/u_res;
-            float t=u_time*0.22;
-            float v=fluid(uv*3.5+vec2(t*0.08,t*0.04), t);
-            float n=clamp((v-0.20)/0.60,0.,1.);
+            vec2 uv=gl_FragCoord.xy/u_res; float t=u_time*0.22;
+            float v=fluid(uv*3.5+vec2(t*0.08,t*0.04), t); float n=clamp((v-0.20)/0.60,0.,1.);
             float w=sin(u_time*0.12)*0.5+0.5;
-            vec3 dark =vec3(0.016,0.025,0.048);
-            vec3 mid  =vec3(0.035,0.065,0.145);
+            vec3 dark =vec3(0.016,0.025,0.048); vec3 mid  =vec3(0.035,0.065,0.145);
             vec3 hi   =vec3(0.055+w*0.02,0.10+w*0.02,0.22+w*0.06);
             vec3 col=mix(dark, mix(mid,hi,n), smoothstep(0.,1.,n));
             gl_FragColor=vec4(col,1.0);
@@ -225,84 +190,120 @@
         const buf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buf); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
         const loc=gl.getAttribLocation(prog,'a_pos'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
         const uRes=gl.getUniformLocation(prog,'u_res'), uTime=gl.getUniformLocation(prog,'u_time');
-        function res(){
-          const dpr=Math.min(window.devicePixelRatio||1,2);
-          canvas.width=window.innerWidth*dpr; canvas.height=window.innerHeight*dpr;
-          gl.viewport(0,0,canvas.width,canvas.height); gl.uniform2f(uRes,canvas.width,canvas.height);
-        }
+        function res(){ const dpr=Math.min(window.devicePixelRatio||1,2); canvas.width=window.innerWidth*dpr; canvas.height=window.innerHeight*dpr; gl.viewport(0,0,canvas.width,canvas.height); gl.uniform2f(uRes,canvas.width,canvas.height); }
         let start=performance.now(); function draw(){gl.uniform1f(uTime,(performance.now()-start)*0.001); gl.drawArrays(gl.TRIANGLE_STRIP,0,4); requestAnimationFrame(draw);}
         res(); draw(); window.onresize=res;
       }
     })();
 
-    /* ══ LOGIC ══ */
+    /* ══ TRANSLATIONS ══ */
+    const I18N = {
+      ja: {
+        loading: '読み込み中...',
+        start_title: 'Discord 認証',
+        start_desc: 'サーバーに参加するにはアカウントの認証が必要です。\n下のボタンをクリックして開始してください。',
+        start_btn: '認証を開始する',
+        success_title: '認証が完了しました',
+        success_desc: 'アカウントの確認が成功しました。Discordに戻るとサーバーを利用できます。',
+        success_note: 'このウィンドウを閉じても構いません。',
+        error_title: '認証エラー',
+        error_retry: '再試行する',
+        error_note: '解決しない場合は管理者にお問い合わせください。',
+        note_security: '情報はセキュアに管理されます。',
+        errors: {
+          email_domain_blocked: 'このメールドメインは許可されていません。',
+          vpn_detected: 'VPNからのアクセスは許可されていません。',
+          email_already_used: 'このメールアドレスは既に使用されています。',
+          user_mismatch: 'ユーザー情報が一致しません。',
+          invalid_state: 'セキュリティエラー。最初からやり直してください。',
+          internal_error: 'サーバーエラーが発生しました。'
+        }
+      },
+      en: {
+        loading: 'Loading...',
+        start_title: 'Discord Verification',
+        start_desc: 'Account verification is required to join this server.\nClick the button below to get started.',
+        start_btn: 'Start Verification',
+        success_title: 'Verified Successfully',
+        success_desc: 'Your account has been verified. You can now use the server features in Discord.',
+        success_note: 'You may close this window now.',
+        error_title: 'Verification Error',
+        error_retry: 'Try Again',
+        error_note: 'Contact admin if the problem persists.',
+        note_security: 'Your information is handled securely.',
+        errors: {
+          email_domain_blocked: 'This email domain is not allowed.',
+          vpn_detected: 'VPN/Proxy access is not permitted.',
+          email_already_used: 'This email is already linked to another account.',
+          user_mismatch: 'User information mismatch.',
+          invalid_state: 'Security error. Please try again from the start.',
+          internal_error: 'An internal server error occurred.'
+        }
+      }
+    };
+
+    let currentLang = 'ja';
     const params = new URLSearchParams(location.search);
     const status = params.get('status');
     const reason = params.get('reason');
     const guild = params.get('guild');
     const user = params.get('user');
 
-    const card = document.getElementById('card');
-    const iconBox = document.getElementById('icon-box');
-    const title = document.getElementById('title');
-    const desc = document.getElementById('desc');
-    const extra = document.getElementById('extra');
+    function setLang(lang) {
+      currentLang = lang;
+      document.querySelectorAll('.lang-btn').forEach(b => {
+        b.classList.toggle('active', b.textContent.toLowerCase() === lang);
+      });
+      render();
+    }
 
-    const errors = {
-      email_domain_blocked: 'このメールドメインは認証が許可されていません。',
-      vpn_detected: 'VPN・プロキシからのアクセスは許可されていません。',
-      email_already_used: 'このメールアドレスは既に別のアカウントで使用されています。',
-      ip_already_used: 'このIPアドレスは既に別のアカウントで使用されています。',
-      user_mismatch: 'ユーザー情報が一致しません。再度やり直してください。',
-      email_not_verified: 'Discordのメールアドレスが未確認です。',
-      guild_not_configured: 'サーバーの設定が完了していません。',
-      token_exchange_failed: '認証に失敗しました。再度お試しください。',
-      invalid_request: '無効なリクエストです。',
-      invalid_state: 'セキュリティエラー（State不正）。再度やり直してください。',
-      state_mismatch: 'セキュリティエラー（不一致）。再度やり直してください。',
-      config_error: 'サーバー設定エラーが発生しました。',
-      internal_error: '内部サーバーエラーが発生しました。'
-    };
+    function render() {
+      const t = I18N[currentLang];
+      const card = document.getElementById('card');
+      const iconBox = document.getElementById('icon-box');
+      const title = document.getElementById('title');
+      const desc = document.getElementById('desc');
+      const extra = document.getElementById('extra');
 
-    function updateIcon(name, isError = false, isSuccess = false) {
-      iconBox.innerHTML = `<i data-lucide="${name}"></i>`;
-      if (isError) card.classList.add('error');
-      if (isSuccess) card.classList.add('success');
+      function updateIcon(name, isError = false, isSuccess = false) {
+        iconBox.innerHTML = `<i data-lucide="${name}"></i>`;
+        card.className = 'card' + (isError ? ' error' : '') + (isSuccess ? ' success' : '');
+        lucide.createIcons();
+      }
+
+      if (!status && guild && user) {
+        updateIcon('shield-check');
+        title.textContent = t.start_title;
+        desc.textContent = t.start_desc;
+        extra.innerHTML = `
+          <a class="btn primary" href="/api/auth?guild=${encodeURIComponent(guild)}&user=${encodeURIComponent(user)}${params.get('role') ? '&role='+params.get('role') : ''}">
+            <i data-lucide="log-in" style="width:14px"></i> ${t.start_btn}
+          </a>
+          <p class="note">${t.note_security}</p>
+        `;
+      } else if (status === 'success') {
+        updateIcon('check-circle', false, true);
+        title.textContent = t.success_title;
+        desc.textContent = t.success_desc;
+        extra.innerHTML = `<p class="note">${t.success_note}</p>`;
+      } else if (status === 'error') {
+        updateIcon('alert-circle', true);
+        title.textContent = t.error_title;
+        desc.textContent = t.errors[reason] || (currentLang === 'ja' ? '不明なエラーが発生しました。' : 'An unknown error occurred.');
+        extra.innerHTML = `
+          <a class="btn" href="javascript:location.reload()"><i data-lucide="refresh-cw" style="width:14px"></i> ${t.error_retry}</a>
+          <p class="note">${t.error_note}</p>
+        `;
+      } else {
+        updateIcon('help-circle');
+        title.textContent = 'Invalid Access';
+        desc.textContent = 'Please access via the Discord verification button.';
+      }
       lucide.createIcons();
     }
 
-    if (!status && guild && user) {
-      updateIcon('shield-check');
-      title.textContent = 'Discord 認証 / Verification';
-      desc.textContent = 'サーバーに参加するにはアカウントの認証が必要です。\n下のボタンをクリックして開始してください。';
-      extra.innerHTML = `
-        <a class="btn primary" href="/api/auth?guild=${encodeURIComponent(guild)}&user=${encodeURIComponent(user)}${params.get('role') ? '&role='+params.get('role') : ''}">
-          認証を開始する / Start Verification
-        </a>
-        <p class="note">メールアドレスの確認とサーバーへの参加権限が必要です。<br>個人情報はセキュアに管理されます。</p>
-      `;
-    } else if (status === 'success') {
-      updateIcon('check-circle', false, true);
-      title.textContent = '認証が完了しました';
-      desc.textContent = 'アカウントの確認が成功しました。Discordに戻るとサーバーの機能を利用できます。';
-      extra.innerHTML = '<p class="note">このウィンドウを閉じても構いません。</p>';
-    } else if (status === 'error') {
-      updateIcon('alert-circle', true);
-      title.textContent = '認証エラー / Error';
-      desc.textContent = errors[reason] || '予期しないエラーが発生しました。再度お試しください。';
-      extra.innerHTML = `
-        <a class="btn" href="javascript:location.reload()">
-          再試行する / Try Again
-        </a>
-        <p class="note">問題が解決しない場合は、サーバーの管理者にお問い合わせください。</p>
-      `;
-    } else {
-      updateIcon('help-circle');
-      title.textContent = 'Invalid Access';
-      desc.textContent = '認証パネルのボタンから再度アクセスしてください。';
-    }
-
-    lucide.createIcons();
+    // Initial render
+    render();
   </script>
 </body>
 </html>
