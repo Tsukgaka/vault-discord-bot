@@ -24,77 +24,79 @@
       --font: 'JetBrains Mono', monospace;
     }
 
+    html { scroll-behavior: smooth; }
     body {
       background: var(--bg);
       color: var(--text);
       font-family: var(--font);
       min-height: 100vh;
+      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
-      overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ══ DECORATION ══ */
+    /* ══ CANVAS BG ══ */
+    #bgCanvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
     .vignette {
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      background: radial-gradient(circle at 50% 50%, transparent 20%, rgba(3, 5, 8, 0.6) 100%);
-      pointer-events: none;
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      background: radial-gradient(ellipse 88% 82% at 50% 50%, transparent 15%, rgba(3, 5, 8, 0.45) 55%, rgba(3, 5, 8, 0.93) 100%);
     }
 
     /* ══ CARD ══ */
     .card {
-      width: 100%;
-      max-width: 480px;
-      background: var(--surface);
-      backdrop-filter: blur(24px) saturate(140%);
-      -webkit-backdrop-filter: blur(24px) saturate(140%);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 48px 32px;
-      text-align: center;
-      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
       position: relative;
-      transition: border-color 0.4s ease;
+      z-index: 10;
+      width: 100%;
+      max-width: 460px;
+      background: rgba(10, 13, 20, 0.75);
+      backdrop-filter: blur(32px) saturate(150%);
+      -webkit-backdrop-filter: blur(32px) saturate(150%);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 50px 35px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      opacity: 0;
+      transform: translateY(15px);
+      animation: fadeUp 0.6s 0.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .icon-wrapper {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 80px;
-      height: 80px;
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 20px;
+      width: 72px;
+      height: 72px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 16px;
       margin-bottom: 24px;
       color: var(--accent);
-      border: 1px solid var(--border);
       transition: all 0.4s ease;
     }
 
-    .icon-wrapper svg {
-      width: 36px;
-      height: 36px;
-      stroke-width: 1.5;
-    }
+    .icon-wrapper svg { width: 32px; height: 32px; stroke-width: 1.5; }
 
     h1 {
-      font-size: 20px;
-      font-weight: 700;
+      font-size: 19px;
+      font-weight: 600;
       color: var(--text-hi);
       margin-bottom: 12px;
-      letter-spacing: -0.5px;
+      letter-spacing: -0.4px;
     }
 
     p {
-      font-size: 13px;
-      line-height: 1.6;
+      font-size: 12px;
+      line-height: 1.7;
       color: var(--text);
-      margin-bottom: 32px;
+      margin-bottom: 35px;
+      letter-spacing: 0.2px;
     }
 
     /* ══ BUTTON ══ */
@@ -104,69 +106,136 @@
       justify-content: center;
       gap: 10px;
       width: 100%;
-      height: 48px;
-      background: var(--accent);
-      color: #000;
+      height: 46px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-hi);
       text-decoration: none;
-      font-size: 14px;
-      font-weight: 700;
-      border-radius: 12px;
-      transition: transform 0.2s, opacity 0.2s;
+      font-family: var(--font);
+      font-size: 11.5px;
+      font-weight: 500;
+      border-radius: 6px;
+      transition: all 0.2s;
       margin-bottom: 24px;
+      letter-spacing: 0.4px;
     }
 
     .btn:hover {
-      transform: translateY(-2px);
-      opacity: 0.9;
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--border-h);
+      transform: translateY(-1px);
     }
 
-    .btn:active {
-      transform: translateY(0);
+    .btn.primary {
+      background: var(--accent);
+      border: none;
+      color: #000;
+      font-weight: 700;
+    }
+
+    .btn.primary:hover {
+      opacity: 0.85;
+      background: var(--accent);
+      box-shadow: 0 4px 15px rgba(232, 164, 74, 0.2);
     }
 
     .note {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--text-dim);
       line-height: 1.5;
+      letter-spacing: 0.3px;
     }
 
     /* ══ STATUS VARIANTS ══ */
     .success .icon-wrapper {
       color: var(--success);
-      background: rgba(87, 242, 135, 0.05);
-      border-color: rgba(87, 242, 135, 0.2);
+      border-color: rgba(87, 242, 135, 0.25);
+      background: rgba(87, 242, 135, 0.03);
     }
     .success h1 { color: var(--success); }
-    .success { border-color: rgba(87, 242, 135, 0.2); }
 
     .error .icon-wrapper {
       color: var(--error);
-      background: rgba(237, 66, 69, 0.05);
-      border-color: rgba(237, 66, 69, 0.2);
+      border-color: rgba(237, 66, 69, 0.25);
+      background: rgba(237, 66, 69, 0.03);
     }
     .error h1 { color: var(--error); }
-    .error { border-color: rgba(237, 66, 69, 0.2); }
 
-    .loading-spinner {
-      animation: spin 2s linear infinite;
-    }
+    .loading-spinner { animation: spin 2s linear infinite; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
   </style>
 </head>
 <body>
+  <canvas id="bgCanvas"></canvas>
   <div class="vignette"></div>
   
   <div class="card" id="card">
     <div class="icon-wrapper" id="icon-box">
       <i data-lucide="loader-2" class="loading-spinner"></i>
     </div>
-    <h1 id="title">読み込み中...</h1>
-    <p id="desc">情報を取得しています。しばらくお待ちください。</p>
+    <h1 id="title">Initializing...</h1>
+    <p id="desc">Preparing your secure authentication session.</p>
     <div id="extra"></div>
   </div>
 
   <script>
+    /* ══ WEBGL FLUID BACKGROUND ══ */
+    (function(){
+      const canvas=document.getElementById('bgCanvas');
+      const gl=canvas.getContext('webgl')||canvas.getContext('experimental-webgl');
+      if(gl){
+        const VS=`attribute vec2 a_pos; void main(){gl_Position=vec4(a_pos,0,1);}`;
+        const FS=`
+          precision highp float;
+          uniform vec2 u_res; uniform float u_time;
+          float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+          float vnoise(vec2 p){
+            vec2 i=floor(p), f=fract(p);
+            vec2 u=f*f*f*(f*(f*6.-15.)+10.0);
+            float a=hash(i),b=hash(i+vec2(1,0)),c=hash(i+vec2(0,1)),d=hash(i+vec2(1,1));
+            return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);
+          }
+          float fbm(vec2 p){
+            float v=0.,a=.5,f=1.;
+            for(int i=0;i<4;i++){v+=a*vnoise(p*f);a*=.5;f*=2.13;}
+            return v;
+          }
+          float fluid(vec2 p, float t){
+            vec2 q=vec2(fbm(p+vec2(0.3,0.15)*t), fbm(p+vec2(5.2,1.3)+vec2(0.18,0.)*t));
+            vec2 r=vec2(fbm(p+1.8*q+vec2(1.7,9.2)+.15*t), fbm(p+1.8*q+vec2(8.3,2.8)+.12*t));
+            return fbm(p+1.8*r);
+          }
+          void main(){
+            vec2 uv=gl_FragCoord.xy/u_res;
+            float t=u_time*0.22;
+            float v=fluid(uv*3.5+vec2(t*0.08,t*0.04), t);
+            float n=clamp((v-0.20)/0.60,0.,1.);
+            float w=sin(u_time*0.12)*0.5+0.5;
+            vec3 dark =vec3(0.016,0.025,0.048);
+            vec3 mid  =vec3(0.035,0.065,0.145);
+            vec3 hi   =vec3(0.055+w*0.02,0.10+w*0.02,0.22+w*0.06);
+            vec3 col=mix(dark, mix(mid,hi,n), smoothstep(0.,1.,n));
+            gl_FragColor=vec4(col,1.0);
+          }
+        `;
+        function compile(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);return s;}
+        const prog=gl.createProgram(); gl.attachShader(prog,compile(gl.VERTEX_SHADER,VS)); gl.attachShader(prog,compile(gl.FRAGMENT_SHADER,FS));
+        gl.linkProgram(prog); gl.useProgram(prog);
+        const buf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buf); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+        const loc=gl.getAttribLocation(prog,'a_pos'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+        const uRes=gl.getUniformLocation(prog,'u_res'), uTime=gl.getUniformLocation(prog,'u_time');
+        function res(){
+          const dpr=Math.min(window.devicePixelRatio||1,2);
+          canvas.width=window.innerWidth*dpr; canvas.height=window.innerHeight*dpr;
+          gl.viewport(0,0,canvas.width,canvas.height); gl.uniform2f(uRes,canvas.width,canvas.height);
+        }
+        let start=performance.now(); function draw(){gl.uniform1f(uTime,(performance.now()-start)*0.001); gl.drawArrays(gl.TRIANGLE_STRIP,0,4); requestAnimationFrame(draw);}
+        res(); draw(); window.onresize=res;
+      }
+    })();
+
+    /* ══ LOGIC ══ */
     const params = new URLSearchParams(location.search);
     const status = params.get('status');
     const reason = params.get('reason');
@@ -203,18 +272,15 @@
     }
 
     if (!status && guild && user) {
-      // Start flow
       updateIcon('shield-check');
-      title.textContent = 'Discord 認証';
-      desc.textContent = 'このサーバーに参加するにはアカウントの認証が必要です。\n下のボタンをクリックして開始してください。';
+      title.textContent = 'Discord 認証 / Verification';
+      desc.textContent = 'サーバーに参加するにはアカウントの認証が必要です。\n下のボタンをクリックして開始してください。';
       extra.innerHTML = `
-        <a class="btn" href="/api/auth?guild=${encodeURIComponent(guild)}&user=${encodeURIComponent(user)}${params.get('role') ? '&role='+params.get('role') : ''}">
-          <i data-lucide="log-in"></i>
-          認証を開始する
+        <a class="btn primary" href="/api/auth?guild=${encodeURIComponent(guild)}&user=${encodeURIComponent(user)}${params.get('role') ? '&role='+params.get('role') : ''}">
+          認証を開始する / Start Verification
         </a>
         <p class="note">メールアドレスの確認とサーバーへの参加権限が必要です。<br>個人情報はセキュアに管理されます。</p>
       `;
-      lucide.createIcons();
     } else if (status === 'success') {
       updateIcon('check-circle', false, true);
       title.textContent = '認証が完了しました';
@@ -222,20 +288,18 @@
       extra.innerHTML = '<p class="note">このウィンドウを閉じても構いません。</p>';
     } else if (status === 'error') {
       updateIcon('alert-circle', true);
-      title.textContent = '認証エラー';
+      title.textContent = '認証エラー / Error';
       desc.textContent = errors[reason] || '予期しないエラーが発生しました。再度お試しください。';
       extra.innerHTML = `
-        <a class="btn" style="background: rgba(255,255,255,0.06); color: var(--text-hi); border: 1px solid var(--border);" href="javascript:location.reload()">
-          <i data-lucide="refresh-cw"></i>
-          再試行する
+        <a class="btn" href="javascript:location.reload()">
+          再試行する / Try Again
         </a>
         <p class="note">問題が解決しない場合は、サーバーの管理者にお問い合わせください。</p>
       `;
-      lucide.createIcons();
     } else {
       updateIcon('help-circle');
-      title.textContent = 'ページが見つかりません';
-      desc.textContent = '無効なアクセスです。認証パネルのボタンから再度アクセスしてください。';
+      title.textContent = 'Invalid Access';
+      desc.textContent = '認証パネルのボタンから再度アクセスしてください。';
     }
 
     lucide.createIcons();
