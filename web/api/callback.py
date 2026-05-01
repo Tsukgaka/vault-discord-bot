@@ -155,7 +155,8 @@ class handler(BaseHTTPRequestHandler):
             return self._error("email_domain_blocked")
 
         # ── 4. User identity check ───────────────────────────────────────
-        if discord_id != user_id:
+        if str(discord_id) != str(user_id):
+            print(f"DEBUG: user_mismatch - Discord API ID: {discord_id}, Session ID: {user_id}")
             return self._error("user_mismatch")
 
         # ── 5. Guild settings ────────────────────────────────────────────
