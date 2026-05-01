@@ -7,29 +7,35 @@ BASE = "https://discord.com/api/v10"
 
 
 def send_log(channel_id: str, embed: dict) -> None:
-    requests.post(
+    res = requests.post(
         f"{BASE}/channels/{channel_id}/messages",
         headers={"Authorization": f"Bot {BOT_TOKEN}", "Content-Type": "application/json"},
         json={"embeds": [embed]},
         timeout=5,
     )
+    if not res.ok:
+        print(f"FAILED to send log: {res.status_code} {res.text}")
 
 
 def add_member_to_guild(guild_id: str, user_id: str, access_token: str) -> None:
-    requests.put(
+    res = requests.put(
         f"{BASE}/guilds/{guild_id}/members/{user_id}",
         headers={"Authorization": f"Bot {BOT_TOKEN}", "Content-Type": "application/json"},
         json={"access_token": access_token},
         timeout=5,
     )
+    if not res.ok:
+        print(f"FAILED to add member: {res.status_code} {res.text}")
 
 
 def add_role(guild_id: str, user_id: str, role_id: str) -> None:
-    requests.put(
+    res = requests.put(
         f"{BASE}/guilds/{guild_id}/members/{user_id}/roles/{role_id}",
         headers={"Authorization": f"Bot {BOT_TOKEN}"},
         timeout=5,
     )
+    if not res.ok:
+        print(f"FAILED to add role: {res.status_code} {res.text}")
 
 
 def build_log_embed(data: dict, lang: str) -> dict:

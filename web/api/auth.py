@@ -21,6 +21,7 @@ class handler(BaseHTTPRequestHandler):
 
         guild_id = (params.get("guild") or [""])[0]
         user_id = (params.get("user") or [""])[0]
+        role_id = (params.get("role") or [""])[0]
 
         if not guild_id or not user_id:
             self._respond(400, "Missing guild or user")
@@ -29,7 +30,7 @@ class handler(BaseHTTPRequestHandler):
         # Generate CSRF state
         state = secrets.token_hex(16)
         cookie_payload = base64.urlsafe_b64encode(
-            json.dumps({"state": state, "guild_id": guild_id, "user_id": user_id}).encode()
+            json.dumps({"state": state, "guild_id": guild_id, "user_id": user_id, "role_id": role_id}).encode()
         ).decode()
 
         oauth_params = urlencode({

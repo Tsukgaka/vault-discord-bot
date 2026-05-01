@@ -91,8 +91,10 @@ class handler(BaseHTTPRequestHandler):
             expected_state = payload["state"]
             guild_id = payload["guild_id"]
             user_id = payload["user_id"]
-        except Exception:
-            return self._error("invalid_state")
+            target_role_id = payload.get("role_id") or VERIFIED_ROLE_ID
+except Exception as e:
+    print(f"Error decoding state cookie: {e}")
+    return self._error("invalid_state")
 
         if not hmac.compare_digest(state, expected_state):
             return self._error("state_mismatch")
@@ -186,20 +188,27 @@ class handler(BaseHTTPRequestHandler):
         })
 
         # ── 9. Join guild + add role ──────────────────────────────────────
-        add_member_to_guild(guild_id, discord_id, access_token)
-        if VERIFIED_ROLE_ID:
-            add_role(guild_id, discord_id, VERIFIED_ROLE_ID)
+        try:
+            add_member_to_guild(guild_id, discord_id, access_token)
+            if target_role_id:
+                print(f"Adding role {target_role_id} to user {discord_id} in guild {guild_id}")
+                add_role(guild_id, discord_id, target_role_id)
+        except Exception as e:
+            print(f"Error adding member or role: {e}")
 
         # ── 10. Send log ──────────────────────────────────────────────────
-        if settings.get("log_channel_id"):
-            embed = build_log_embed({
-                "discord_id": discord_id,
-                "discord_username": username,
-                "email": email,
-                "ip_address": client_ip,
-                "is_vpn": ip_info["is_vpn"],
-            }, lang)
-            send_log(settings["log_channel_id"], embed)
+        try:
+            if settings.get("log_channel_id"):
+                embed = build_log_embed({
+                    "discord_id": discord_id,
+                    "discord_username": username,
+                    "email": email,
+                    "ip_address": client_ip,
+                    "is_vpn": ip_info["is_vpn"],
+                }, lang)
+                send_log(settings["log_channel_id"], embed)
+        except Exception as e:
+            print(f"Error sending log: {e}")
 
         # ── 11. Redirect to success ───────────────────────────────────────
         self.send_response(302)

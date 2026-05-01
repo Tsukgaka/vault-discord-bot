@@ -37,7 +37,7 @@ def get_guild_settings(guild_id: str) -> dict:
                 """,
                 (guild_id,),
             )
-            return dict(conn.cursor().fetchone() or {}) or _default_settings(guild_id)
+            return dict(cur.fetchone() or {})
 
 
 def _default_settings(guild_id: str) -> dict:
