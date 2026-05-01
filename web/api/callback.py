@@ -15,10 +15,11 @@ from _db import hash_value, get_guild_settings, check_duplicates, save_verified_
 from _vpn import check_ip, get_client_ip
 from _discord import send_log, add_member_to_guild, add_role, build_log_embed
 
-WEB_URL = os.environ["WEB_URL"].rstrip("/")
-CLIENT_ID = os.environ["DISCORD_CLIENT_ID"]
-CLIENT_SECRET = os.environ["DISCORD_CLIENT_SECRET"]
-BOT_TOKEN = os.environ["DISCORD_BOT_TOKEN"]
+# 環境変数の取得（存在しない場合はエラーではなくNoneを返すようにし、後でチェックする）
+WEB_URL = os.environ.get("WEB_URL", "").rstrip("/")
+CLIENT_ID = os.environ.get("DISCORD_CLIENT_ID", "")
+CLIENT_SECRET = os.environ.get("DISCORD_CLIENT_SECRET", "")
+BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN", "")
 VERIFIED_ROLE_ID = os.environ.get("VERIFIED_ROLE_ID", "")
 
 # メールドメインブロックリスト（これらのドメインからの認証を拒否）
@@ -40,6 +41,15 @@ def _parse_cookies(cookie_header: str) -> dict:
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
+        try:
+            self._handle_request()
+        except Exception as e:
+            print(f"CRITICAL ERROR in do_GET: {e}")
+            import traceback
+            traceback.print_exc()
+            self._error("internal_error")
+
+    def _handle_request(self):
         parsed = urlparse(self.path)
         params = parse_qs(parsed.query)
 
@@ -112,14 +122,18 @@ class handler(BaseHTTPRequestHandler):
         # ── 5. Guild settings ────────────────────────────────────────────
         settings = get_guild_settings(guild_id)
         if not settings:
+            print(f"Error: No settings found for guild {guild_id}")
             return self._error("guild_not_configured")
 
         lang = settings.get("language", "ja")
 
         # ── 6. VPN check ─────────────────────────────────────────────────
-        client_ip = get_client_ip(self.headers._headers_as_dict() if hasattr(self.headers, "_headers_as_dict") else {})
         # Vercel passes real IP via x-real-ip header
-        client_ip = self.headers.get("x-real-ip") or self.headers.get("x-forwarded-for", "127.0.0.1").split(",")[0].strip()
+        client_ip = (
+            self.headers.get("x-real-ip") 
+            or self.headers.get("x-forwarded-for", "").split(",")[0].strip()
+            or "127.0.0.1"
+        )
 
         ip_info = check_ip(client_ip)
 

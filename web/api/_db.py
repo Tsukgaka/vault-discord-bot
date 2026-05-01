@@ -4,7 +4,8 @@ import psycopg2
 import psycopg2.extras
 from contextlib import contextmanager
 
-DATABASE_URL = os.environ["DATABASE_URL"]
+# 環境変数はインポート時ではなく、必要な時に取得するようにするか、存在チェックを行う
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
 
 @contextmanager

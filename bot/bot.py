@@ -47,6 +47,41 @@ async def cmd_check(interaction: discord.Interaction):
     await interaction.response.send_modal(CheckModal(lang))
 
 
+# ── /panel command ──────────────────────────────────────────────────────────
+
+@tree.command(name="panel", description="認証パネルを送信 / Send authentication panel")
+@app_commands.describe(role="認証成功時に付与するロール / Role to give upon success")
+@app_commands.default_permissions(administrator=True)
+async def cmd_panel(interaction: discord.Interaction, role: discord.Role):
+    # 自分にだけ見えるメッセージ
+    await interaction.response.send_message("Generating...", ephemeral=True)
+
+    settings = get_guild_settings(str(interaction.guild_id))
+    lang = settings.get("language", "ja")
+
+    # 認証リンク (OAuth2 URL)
+    # クライアントID等は環境変数から取得するように変更可能だが、ユーザー指定のリンクを優先
+    auth_url = "https://discord.com/oauth2/authorize?client_id=1499719961810173972&response_type=code&redirect_uri=https%3A%2F%2Fdiscordverify.vercel.app%2Fapi%2Fcallback&scope=identify+email+guilds.join"
+
+    embed = discord.Embed(
+        title="✅ 認証 / Verification",
+        description=(
+            "このサーバーに参加するには認証が必要です。\n"
+            "下のボタンをクリックして開始してください。\n\n"
+            "To join this server, you need to verify your account.\n"
+            "Click the button below to start."
+        ),
+        color=0x5865F2
+    )
+    embed.set_footer(text=f"Role: {role.name}")
+
+    view = discord.ui.View(timeout=None)
+    view.add_item(discord.ui.Button(label="Verify / 認証", url=auth_url, style=discord.ButtonStyle.link))
+
+    # 新しいメッセージとして送信
+    await interaction.channel.send(embed=embed, view=view)
+
+
 # ── Settings View (persistent) ─────────────────────────────────────────────
 
 class SettingsView(discord.ui.View):
